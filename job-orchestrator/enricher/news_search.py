@@ -36,6 +36,16 @@ def _scrape_naver_news(query: str, max_count: int = 5) -> list[dict]:
     soup = BeautifulSoup(resp.text, "html.parser")
     articles: list[dict] = []
 
+    # 모바일 뉴스 구조 디버그
+    body = soup.find("body")
+    if body:
+        # 주요 div/ul 클래스 목록 확인
+        top_els = [(el.name, el.get("class", []), el.get("id", "")) for el in body.find_all(["ul", "div", "section"], recursive=False)]
+        logger.info("[뉴스 디버그] body 최상위 태그: %s", top_els[:10])
+    all_a = soup.select("a[href^='http']")
+    logger.info("[뉴스 디버그] http링크 %d개, 첫3개: %s", len(all_a),
+                [(a.get("class"), a.get("href","")[:60]) for a in all_a[:3]])
+
     # 모바일 뉴스 구조: ul.list_news > li 또는 div.news_wrap
     containers = soup.select("ul.list_news > li")
 
