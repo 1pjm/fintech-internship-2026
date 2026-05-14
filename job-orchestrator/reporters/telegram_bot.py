@@ -94,7 +94,7 @@ async def send_keyboard(chat_id: str | int, text: str) -> None:
             [{"text": "📊 상태"}, {"text": "▶️ 즉시실행"}],
             [{"text": "⏸️ 일시정지"}, {"text": "▶️ 재개"}],
             [{"text": "📋 오늘 공고"}, {"text": "📈 통계"}],
-            [{"text": "🔄 수집모드"}],
+            [{"text": "⭐ 관심기업 목록"}, {"text": "🔄 수집모드"}],
         ],
         "resize_keyboard": True,
         "persistent": True,
@@ -153,6 +153,7 @@ async def handle_command(
         "▶️ 재개": "/resume",
         "📋 오늘 공고": "/jobs",
         "📈 통계": "/stats",
+        "⭐ 관심기업 목록": "/watchlist",
     }
     cmd = btn_map.get(text.strip(), cmd)
 
