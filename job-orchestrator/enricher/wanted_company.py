@@ -52,8 +52,8 @@ async def fetch(company_name: str) -> dict:
             company_data: dict = {}
 
             for item in data.get("data", []):
-                job = item.get("job", item)
-                company = job.get("company", {})
+                # Wanted API: item 자체에 company 필드 (job 래퍼 없음)
+                company = item.get("company", item.get("job", {}).get("company", {}))
                 if company_name in company.get("name", ""):
                     company_id = company.get("id")
                     company_data = company
@@ -88,20 +88,23 @@ async def fetch(company_name: str) -> dict:
                 detail = detail_resp.json()
                 logger.info("Wanted 회사 상세 (%s): %s", company_name, str(detail)[:500])
 
-                d = detail.get("data", detail)
+                # Wanted 상세: 최상위 키가 "company"
+                d = detail.get("company", detail.get("data", detail))
 
                 if not result.get("employee_count"):
                     emp, size = _parse_employee(
-                        d.get("employees") or d.get("employee_count") or d.get("member_count")
+                        d.get("employee_count") or d.get("employees")
+                        or d.get("member_count") or d.get("headcount_range")
                     )
                     if emp:
                         result["employee_count"] = emp
                         result["size"] = size
 
+                # founded_year: Wanted가 정수로 직접 반환
                 if not result.get("founded_year"):
-                    founded = d.get("established_at") or d.get("founded_at")
-                    if founded:
-                        m = re.search(r"(19|20)\d{2}", str(founded))
+                    fy = d.get("founded_year") or d.get("established_at") or d.get("founded_at")
+                    if fy:
+                        m = re.search(r"(19|20)\d{2}", str(fy))
                         if m:
                             result["founded_year"] = int(m.group())
 
