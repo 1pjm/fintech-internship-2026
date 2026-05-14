@@ -195,10 +195,21 @@ async def handle_command(
         )
         await send(chat_id, text_out)
 
-    elif cmd.startswith("/mode") or text.strip().startswith("🔄 수집모드"):
+    elif text.strip() == "🔄 수집모드" or cmd == "/mode" and len(text.strip().split()) < 2:
+        current = config.CAREER_LEVEL
+        mode_name = {"entry": "신입·경력무관", "career": "경력직", "all": "전체"}.get(current, current)
+        await send(
+            chat_id,
+            f"현재 수집 모드: <b>{mode_name}</b>\n\n변경하려면 아래 명령어를 입력하세요:\n\n"
+            "/mode entry — 신입·경력무관 공고만\n"
+            "/mode career — 경력직 공고만\n"
+            "/mode all — 전체",
+        )
+
+    elif cmd.startswith("/mode"):
         parts = text.strip().split()
         if len(parts) < 2:
-            await send(chat_id, "사용법: /mode entry | /mode career | /mode all\n\n신입: 신입·경력무관 공고만\n경력: 경력직 공고만\nall: 전체")
+            await send(chat_id, "사용법: /mode entry | /mode career | /mode all")
             return
         mode = parts[1].lower()
         if mode not in ("entry", "career", "all"):
