@@ -14,8 +14,12 @@ def _require(key: str) -> str:
 
 
 class Config:
-    # Anthropic
+    # Anthropic (선택)
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+
+    # Gemini (무료 스크리닝)
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = "gemini-2.0-flash"
 
     # 원티드
     WANTED_ACCESS_TOKEN: str = os.getenv("WANTED_ACCESS_TOKEN", "")

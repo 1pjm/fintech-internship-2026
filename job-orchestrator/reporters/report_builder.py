@@ -1,29 +1,42 @@
-import json
+import asyncio
 import logging
 from datetime import date, datetime, timezone
-
-import anthropic
 
 from config import config
 
 logger = logging.getLogger(__name__)
 
-_client = anthropic.AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY)
-
-JD_SUMMARY_PROMPT = """다음 채용 공고 JD를 읽고 핵심 내용을 2줄로 요약하세요. 반드시 한국어로, 줄바꿈 없이 " / "로 구분해 주세요."""
+JD_SUMMARY_PROMPT = "다음 채용 공고 JD를 읽고 핵심 내용을 2줄로 요약하세요. 반드시 한국어로, 줄바꿈 없이 \" / \"로 구분해 주세요.\n\nJD:\n"
 
 
 async def _summarize_jd(jd: str) -> str:
+    content = JD_SUMMARY_PROMPT + jd[:2000]
     try:
-        msg = await _client.messages.create(
-            model=config.CLAUDE_MODEL,
-            max_tokens=200,
-            messages=[{"role": "user", "content": f"{JD_SUMMARY_PROMPT}\n\nJD:\n{jd[:2000]}"}],
-        )
-        return msg.content[0].text.strip()
+        if config.GEMINI_API_KEY:
+            import google.generativeai as genai
+            genai.configure(api_key=config.GEMINI_API_KEY)
+            model = genai.GenerativeModel(
+                model_name=config.GEMINI_MODEL,
+                generation_config={"max_output_tokens": 200, "temperature": 0.3},
+            )
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(None, lambda: model.generate_content(content))
+            return response.text.strip()
+
+        elif config.ANTHROPIC_API_KEY:
+            import anthropic
+            client = anthropic.AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY)
+            msg = await client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=200,
+                messages=[{"role": "user", "content": content}],
+            )
+            return msg.content[0].text.strip()
+
     except Exception as e:
         logger.warning("JD 요약 실패: %s", e)
-        return "요약 정보 없음"
+
+    return "요약 정보 없음"
 
 
 def _calc_d_day(deadline_str: str) -> tuple[str, int]:

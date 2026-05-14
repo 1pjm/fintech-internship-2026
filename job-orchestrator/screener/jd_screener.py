@@ -2,18 +2,14 @@ import json
 import logging
 from datetime import datetime, timezone
 
-import anthropic
-
 from config import config
 from db import is_job_seen, mark_job_seen, update_screen_result
 
 logger = logging.getLogger(__name__)
 
-_client = anthropic.AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY)
-
 SYSTEM_PROMPT = """당신은 채용 공고 분류 전문가입니다.
 아래 기준 중 하나라도 해당하면 PASS, 아니면 FAIL을 반환하세요.
-반드시 JSON으로만 응답하세요.
+반드시 JSON으로만 응답하세요. 다른 텍스트는 절대 포함하지 마세요.
 
 기준:
 1. 업종이 핀테크/금융/페이먼트/인슈어테크
@@ -23,8 +19,18 @@ SYSTEM_PROMPT = """당신은 채용 공고 분류 전문가입니다.
 응답 형식: {"result": "PASS"|"FAIL", "reason": "...", "matched_condition": 1|2|3|null, "ai_relevance_score": 1~5}"""
 
 
+def _get_gemini_client():
+    import google.generativeai as genai
+    genai.configure(api_key=config.GEMINI_API_KEY)
+    return genai.GenerativeModel(
+        model_name=config.GEMINI_MODEL,
+        system_instruction=SYSTEM_PROMPT,
+        generation_config={"max_output_tokens": 300, "temperature": 0.1},
+    )
+
+
 def _quick_match(job: dict) -> bool:
-    """Claude API 호출 전 단순 키워드 사전 필터링."""
+    """Claude/Gemini API 호출 전 단순 키워드 사전 필터링."""
     text = f"{job.get('job_title', '')} {' '.join(job.get('tags', []))}".lower()
     for kw in config.JOB_KEYWORDS + config.INDUSTRY_KEYWORDS:
         if kw.lower() in text:
@@ -32,30 +38,46 @@ def _quick_match(job: dict) -> bool:
     return False
 
 
-async def _call_claude(job: dict) -> dict:
+async def _call_ai(job: dict) -> dict:
     title = job.get("job_title", "")
     company = job.get("company_name", "")
     tags = ", ".join(job.get("tags", []))
     jd = job.get("job_description", "")[:3000]
-
     user_content = f"회사명: {company}\n직무명: {title}\n태그: {tags}\n\nJD:\n{jd}"
 
-    msg = await _client.messages.create(
-        model=config.CLAUDE_MODEL,
-        max_tokens=config.CLAUDE_MAX_TOKENS,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user_content}],
-    )
-    raw = msg.content[0].text.strip()
-    return json.loads(raw)
+    # Gemini 우선, 없으면 Claude, 둘 다 없으면 예외
+    if config.GEMINI_API_KEY:
+        import asyncio
+        import google.generativeai as genai
+        model = _get_gemini_client()
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None, lambda: model.generate_content(user_content)
+        )
+        raw = response.text.strip()
+        # 코드블록 제거
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        return json.loads(raw.strip())
+
+    elif config.ANTHROPIC_API_KEY:
+        import anthropic
+        client = anthropic.AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY)
+        msg = await client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=300,
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_content}],
+        )
+        return json.loads(msg.content[0].text.strip())
+
+    else:
+        raise RuntimeError("GEMINI_API_KEY 또는 ANTHROPIC_API_KEY 중 하나가 필요합니다.")
 
 
 async def screen(jobs: list[dict]) -> tuple[list[dict], dict]:
-    """
-    Returns:
-        passed: PASS 판정 공고 목록 (screen 결과 첨부)
-        stats: 단계 요약 통계
-    """
     passed: list[dict] = []
     stats = {"pass": 0, "fail": 0, "skip_dup": 0, "claude_error": 0, "condition": {1: 0, 2: 0, 3: 0}}
 
@@ -70,19 +92,28 @@ async def screen(jobs: list[dict]) -> tuple[list[dict], dict]:
         await mark_job_seen(job)
 
         if _quick_match(job):
-            job["screen_result"] = {"result": "PASS", "reason": "키워드 사전매칭", "matched_condition": 2, "ai_relevance_score": 3}
+            job["screen_result"] = {
+                "result": "PASS",
+                "reason": "키워드 사전매칭",
+                "matched_condition": 2,
+                "ai_relevance_score": 3,
+            }
             screened_at = datetime.now(timezone.utc).isoformat()
             await update_screen_result(job_id, source, "PASS", screened_at)
             stats["pass"] += 1
-            cond = 2
-            stats["condition"][cond] = stats["condition"].get(cond, 0) + 1
+            stats["condition"][2] = stats["condition"].get(2, 0) + 1
             passed.append(job)
             continue
 
+        # AI API가 없으면 키워드 매칭만으로 처리
+        if not config.GEMINI_API_KEY and not config.ANTHROPIC_API_KEY:
+            stats["fail"] += 1
+            continue
+
         try:
-            result = await _call_claude(job)
+            result = await _call_ai(job)
         except Exception as e:
-            logger.error("Claude API 오류 (job_id=%s): %s", job_id, e)
+            logger.error("AI 스크리닝 오류 (job_id=%s): %s", job_id, e)
             stats["claude_error"] += 1
             continue
 
