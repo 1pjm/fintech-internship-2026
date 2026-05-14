@@ -106,4 +106,4 @@ def _save_raw(jobs: list[dict]) -> None:
     ts = datetime.utcnow().strftime("%Y%m%d_%H%M")
     path = config.REPORTS_RAW_DIR / "wanted" / f"{ts}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(jobs, ensure_ascii=False, indent=2))
+    path.write_text(json.dumps(jobs, ensure_ascii=False, indent=2), encoding="utf-8")

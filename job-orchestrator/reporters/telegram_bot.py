@@ -60,7 +60,7 @@ def _api(endpoint: str, payload: dict) -> dict:
         headers={"Content-Type": "application/json"},
     )
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
         logger.error("Telegram API 오류 (%s): %s — %s", endpoint, e.code, e.read().decode())
