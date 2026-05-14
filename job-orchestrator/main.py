@@ -82,10 +82,11 @@ async def run_pipeline(sources: list[str] | None = None) -> None:
                 collect_errors.append(f"사람인: {e}")
                 pipeline_state.errors.append(f"[수집] 사람인: {e}")
 
+        error_lines = [f"❌ 실패: {e}" for e in collect_errors] or ["❌ 실패: 없음"]
         _log_stage(1, "job-collector", [
             f"✅ 원티드: {wanted_count}건 수집",
             f"✅ 사람인: {saramin_count}건 수집",
-            *(f"❌ 실패: {e}" for e in collect_errors) or ["❌ 실패: 없음"],
+            *error_lines,
             f"→ 총 {len(all_jobs)}건 → 2단계로 전달",
         ])
 
