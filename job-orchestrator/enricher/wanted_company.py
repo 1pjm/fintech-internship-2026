@@ -46,7 +46,7 @@ async def fetch(company_name: str) -> dict:
             )
             resp.raise_for_status()
             data = resp.json()
-            logger.debug("Wanted jobs 검색 응답 (%s): %s", company_name, str(data)[:300])
+            logger.info("Wanted jobs 검색 응답 (%s): %s", company_name, str(data)[:500])
 
             company_id = None
             company_data: dict = {}
@@ -86,7 +86,7 @@ async def fetch(company_name: str) -> dict:
                 detail_resp = await client.get(f"{_COMPANY_URL}/{company_id}")
                 detail_resp.raise_for_status()
                 detail = detail_resp.json()
-                logger.debug("Wanted 회사 상세 (%s): %s", company_name, str(detail)[:300])
+                logger.info("Wanted 회사 상세 (%s): %s", company_name, str(detail)[:500])
 
                 d = detail.get("data", detail)
 
