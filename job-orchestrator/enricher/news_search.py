@@ -37,8 +37,8 @@ def _scrape_naver_news(query: str, max_count: int = 5) -> list[dict]:
     soup = BeautifulSoup(resp.text, "html.parser")
     articles: list[dict] = []
 
-    # 전략 1: li.bx (lineup 정렬바 제외)
-    containers = [c for c in soup.select("li.bx") if "lineup" not in c.get("class", [])]
+    # 전략 1: li.bx 중 실제 뉴스 항목만 (news_area 포함된 것)
+    containers = [c for c in soup.select("li.bx") if c.select_one("div.news_area")]
 
     # 전략 2: ul.list_news > li
     if not containers:
@@ -48,17 +48,15 @@ def _scrape_naver_news(query: str, max_count: int = 5) -> list[dict]:
     if not containers:
         containers = soup.select("div.news_area")
 
-    if containers:
-        first = containers[0]
-        logger.info("[뉴스 디버그] 뉴스 컨테이너 수: %d, 첫 HTML: %s", len(containers), str(first)[:600])
+    logger.info("[뉴스 디버그] 뉴스 컨테이너 수: %d", len(containers))
 
     for container in containers[:max_count]:
+        news_area = container.select_one("div.news_area") or container
         # 제목 + URL
         title_el = (
-            container.select_one("a.news_tit")
-            or container.select_one("a[class*='tit']")
-            or container.select_one("div.news_area a[href^='http']")
-            or container.select_one("a[href^='http']")
+            news_area.select_one("a.news_tit")
+            or news_area.select_one("a[class*='tit']")
+            or news_area.select_one("a[href^='http']")
         )
         if not title_el:
             continue
