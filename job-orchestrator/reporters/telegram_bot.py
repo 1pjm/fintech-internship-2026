@@ -6,6 +6,8 @@ import urllib.request
 from datetime import datetime, timezone
 from typing import Callable, Awaitable
 
+import httpx
+
 from config import config
 
 logger = logging.getLogger(__name__)
@@ -74,7 +76,12 @@ async def send(chat_id: str | int, text: str, reply_markup: dict | None = None) 
     payload: dict = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
     if reply_markup:
         payload["reply_markup"] = reply_markup
-    await asyncio.get_event_loop().run_in_executor(None, lambda: _api("sendMessage", payload))
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(f"{TELEGRAM_API}/sendMessage", json=payload, timeout=15)
+            resp.raise_for_status()
+    except Exception as e:
+        logger.error("sendMessage 실패 (%s): %s", chat_id, e)
 
 
 async def send_keyboard(chat_id: str | int, text: str) -> None:
