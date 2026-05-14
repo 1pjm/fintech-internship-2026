@@ -60,6 +60,9 @@ def _parse_job(item: dict) -> dict:
     }
 
 
+MAX_JOBS_PER_CATEGORY = 300  # 카테고리당 최대 수집 건수
+
+
 async def collect(retries: int = config.MAX_RETRIES) -> list[dict]:
     jobs: list[dict] = []
     attempt = 0
@@ -69,13 +72,15 @@ async def collect(retries: int = config.MAX_RETRIES) -> list[dict]:
             async with httpx.AsyncClient() as client:
                 for category_id in WANTED_CATEGORY_IDS:
                     offset = 0
-                    while True:
+                    category_count = 0
+                    while category_count < MAX_JOBS_PER_CATEGORY:
                         data = await _fetch_page(client, category_id, offset)
                         items = data.get("data", [])
                         if not items:
                             break
                         for item in items:
                             jobs.append(_parse_job(item))
+                        category_count += len(items)
                         if len(items) < 100:
                             break
                         offset += 100
