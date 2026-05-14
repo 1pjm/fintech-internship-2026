@@ -96,6 +96,8 @@ def _quick_match(job: dict) -> bool:
 async def screen(jobs: list[dict]) -> tuple[list[dict], dict]:
     passed: list[dict] = []
     stats = {"pass": 0, "fail": 0, "skip_dup": 0, "claude_error": 0, "condition": {1: 0, 2: 0, 3: 0}}
+    ai_consecutive_failures = 0
+    AI_CIRCUIT_BREAKER = 3  # 연속 N회 실패 시 AI 스크리닝 비활성화
 
     for job in jobs:
         job_id = job.get("job_id", "")
@@ -121,16 +123,25 @@ async def screen(jobs: list[dict]) -> tuple[list[dict], dict]:
             passed.append(job)
             continue
 
-        if not config.GEMINI_API_KEY and not config.ANTHROPIC_API_KEY:
+        # AI 스크리닝 (할당량 소진 시 건너뜀)
+        ai_available = (config.GEMINI_API_KEY or config.ANTHROPIC_API_KEY) \
+                       and ai_consecutive_failures < AI_CIRCUIT_BREAKER
+
+        if not ai_available:
             stats["fail"] += 1
             continue
 
         try:
             result = await _call_ai(job)
-            await asyncio.sleep(2)  # rate limit 방지
+            ai_consecutive_failures = 0
+            await asyncio.sleep(2)
         except Exception as e:
-            logger.error("AI 스크리닝 오류 (job_id=%s): %s", job_id, e)
+            err_str = str(e)
+            logger.error("AI 스크리닝 오류 (job_id=%s): %s", job_id, err_str[:120])
             stats["claude_error"] += 1
+            ai_consecutive_failures += 1
+            if ai_consecutive_failures >= AI_CIRCUIT_BREAKER:
+                logger.warning("AI 스크리닝 %d회 연속 실패 — 이번 실행은 키워드 매칭만 사용", AI_CIRCUIT_BREAKER)
             await asyncio.sleep(5)
             continue
 
