@@ -1,5 +1,7 @@
+import asyncio
 import json
 import logging
+import re
 from datetime import datetime, timezone
 
 from config import config
@@ -19,23 +21,38 @@ SYSTEM_PROMPT = """당신은 채용 공고 분류 전문가입니다.
 응답 형식: {"result": "PASS"|"FAIL", "reason": "...", "matched_condition": 1|2|3|null, "ai_relevance_score": 1~5}"""
 
 
-def _get_gemini_client():
-    import google.generativeai as genai
-    genai.configure(api_key=config.GEMINI_API_KEY)
-    return genai.GenerativeModel(
-        model_name=config.GEMINI_MODEL,
-        system_instruction=SYSTEM_PROMPT,
-        generation_config={"max_output_tokens": 300, "temperature": 0.1},
-    )
+def _extract_retry_delay(error_str: str) -> int:
+    m = re.search(r'retry_delay\s*\{[^}]*seconds:\s*(\d+)', error_str)
+    return int(m.group(1)) + 2 if m else 30
 
 
-def _quick_match(job: dict) -> bool:
-    """Claude/Gemini API 호출 전 단순 키워드 사전 필터링."""
-    text = f"{job.get('job_title', '')} {' '.join(job.get('tags', []))}".lower()
-    for kw in config.JOB_KEYWORDS + config.INDUSTRY_KEYWORDS:
-        if kw.lower() in text:
-            return True
-    return False
+async def _call_gemini(content: str, system: str, max_tokens: int = 300) -> str:
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
+    for attempt in range(3):
+        try:
+            response = await asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: client.models.generate_content(
+                    model=config.GEMINI_MODEL,
+                    contents=content,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system,
+                        max_output_tokens=max_tokens,
+                        temperature=0.1,
+                    ),
+                ),
+            )
+            return response.text.strip()
+        except Exception as e:
+            if "429" in str(e) and attempt < 2:
+                delay = _extract_retry_delay(str(e))
+                logger.warning("Gemini 429 — %ds 후 재시도 (%d/3)", delay, attempt + 1)
+                await asyncio.sleep(delay)
+            else:
+                raise
 
 
 async def _call_ai(job: dict) -> dict:
@@ -45,17 +62,8 @@ async def _call_ai(job: dict) -> dict:
     jd = job.get("job_description", "")[:3000]
     user_content = f"회사명: {company}\n직무명: {title}\n태그: {tags}\n\nJD:\n{jd}"
 
-    # Gemini 우선, 없으면 Claude, 둘 다 없으면 예외
     if config.GEMINI_API_KEY:
-        import asyncio
-        import google.generativeai as genai
-        model = _get_gemini_client()
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            None, lambda: model.generate_content(user_content)
-        )
-        raw = response.text.strip()
-        # 코드블록 제거
+        raw = await _call_gemini(user_content, SYSTEM_PROMPT, max_tokens=300)
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):
@@ -75,6 +83,14 @@ async def _call_ai(job: dict) -> dict:
 
     else:
         raise RuntimeError("GEMINI_API_KEY 또는 ANTHROPIC_API_KEY 중 하나가 필요합니다.")
+
+
+def _quick_match(job: dict) -> bool:
+    text = f"{job.get('job_title', '')} {' '.join(job.get('tags', []))}".lower()
+    for kw in config.JOB_KEYWORDS + config.INDUSTRY_KEYWORDS:
+        if kw.lower() in text:
+            return True
+    return False
 
 
 async def screen(jobs: list[dict]) -> tuple[list[dict], dict]:
@@ -105,7 +121,6 @@ async def screen(jobs: list[dict]) -> tuple[list[dict], dict]:
             passed.append(job)
             continue
 
-        # AI API가 없으면 키워드 매칭만으로 처리
         if not config.GEMINI_API_KEY and not config.ANTHROPIC_API_KEY:
             stats["fail"] += 1
             continue

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 from datetime import date, datetime, timezone
 
 from config import config
@@ -9,19 +10,35 @@ logger = logging.getLogger(__name__)
 JD_SUMMARY_PROMPT = "다음 채용 공고 JD를 읽고 핵심 내용을 2줄로 요약하세요. 반드시 한국어로, 줄바꿈 없이 \" / \"로 구분해 주세요.\n\nJD:\n"
 
 
+def _extract_retry_delay(error_str: str) -> int:
+    m = re.search(r'retry_delay\s*\{[^}]*seconds:\s*(\d+)', error_str)
+    return int(m.group(1)) + 2 if m else 30
+
+
 async def _summarize_jd(jd: str) -> str:
     content = JD_SUMMARY_PROMPT + jd[:2000]
     try:
         if config.GEMINI_API_KEY:
-            import google.generativeai as genai
-            genai.configure(api_key=config.GEMINI_API_KEY)
-            model = genai.GenerativeModel(
-                model_name=config.GEMINI_MODEL,
-                generation_config={"max_output_tokens": 200, "temperature": 0.3},
-            )
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(None, lambda: model.generate_content(content))
-            return response.text.strip()
+            from google import genai
+            from google.genai import types
+            client = genai.Client(api_key=config.GEMINI_API_KEY)
+            for attempt in range(3):
+                try:
+                    response = await asyncio.get_event_loop().run_in_executor(
+                        None,
+                        lambda: client.models.generate_content(
+                            model=config.GEMINI_MODEL,
+                            contents=content,
+                            config=types.GenerateContentConfig(max_output_tokens=200, temperature=0.3),
+                        ),
+                    )
+                    return response.text.strip()
+                except Exception as e:
+                    if "429" in str(e) and attempt < 2:
+                        delay = _extract_retry_delay(str(e))
+                        await asyncio.sleep(delay)
+                    else:
+                        raise
 
         elif config.ANTHROPIC_API_KEY:
             import anthropic
