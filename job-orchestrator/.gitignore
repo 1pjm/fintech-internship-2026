@@ -1,0 +1,7 @@
+.env
+db/jobs.sqlite
+reports/
+logs/
+__pycache__/
+*.pyc
+.DS_Store
