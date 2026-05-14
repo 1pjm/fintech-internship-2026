@@ -37,51 +37,19 @@ def _scrape_naver_news(query: str, max_count: int = 5) -> list[dict]:
     soup = BeautifulSoup(resp.text, "html.parser")
     articles: list[dict] = []
 
-    # 전략 1: li.bx 중 실제 뉴스 항목만 (news_area 포함된 것)
-    containers = [c for c in soup.select("li.bx") if c.select_one("div.news_area")]
+    # li.bx 클래스 목록 디버그
+    all_bx = soup.select("li.bx")
+    for bx in all_bx:
+        logger.info("[뉴스 디버그] li.bx classes=%s inner_tags=%s",
+                    bx.get("class"),
+                    [t.name + "." + " ".join(t.get("class", [])) for t in bx.find_all(True, recursive=False)])
 
-    # 전략 2: ul.list_news > li
-    if not containers:
-        containers = soup.select("ul.list_news li")
-
-    # 전략 3: div.news_area 직접
-    if not containers:
-        containers = soup.select("div.news_area")
-
-    logger.info("[뉴스 디버그] 뉴스 컨테이너 수: %d", len(containers))
-
-    for container in containers[:max_count]:
-        news_area = container.select_one("div.news_area") or container
-        # 제목 + URL
-        title_el = (
-            news_area.select_one("a.news_tit")
-            or news_area.select_one("a[class*='tit']")
-            or news_area.select_one("a[href^='http']")
-        )
-        if not title_el:
-            continue
-        title = title_el.get_text(strip=True)
-        url = title_el.get("href", "")
-        if not title or not url.startswith("http"):
-            continue
-
-        # 출처
-        source = ""
-        for sel in ["a.info.press", ".press", "a.info[href*='news']", ".info_group a"]:
-            el = container.select_one(sel)
-            if el:
-                source = el.get_text(strip=True)
-                break
-
-        # 날짜
-        date = ""
-        for el in container.select("span.info, span.date, .info_group span"):
-            candidate = el.get_text(strip=True)
-            if _DATE_PATTERN.search(candidate):
-                date = candidate
-                break
-
-        articles.append({"title": title, "url": url, "date": date, "source": source})
+    # 페이지 내 모든 a 태그 중 뉴스 URL 패턴 검색
+    news_links = soup.select("a[href*='naver.com/article'], a[href*='news.naver'], a[href*='n.news']")
+    logger.info("[뉴스 디버그] 뉴스 링크 수: %d", len(news_links))
+    if news_links:
+        logger.info("[뉴스 디버그] 샘플: class=%s href=%s text=%s",
+                    news_links[0].get("class"), news_links[0].get("href","")[:100], news_links[0].get_text(strip=True)[:50])
 
     return articles
 
