@@ -86,20 +86,38 @@ async def fetch(company_name: str) -> dict:
                 detail_resp = await client.get(f"{_COMPANY_URL}/{company_id}")
                 detail_resp.raise_for_status()
                 detail = detail_resp.json()
-                d_keys = list(detail.get("company", {}).keys())
-                logger.info("Wanted 회사 상세 keys (%s): %s | full: %s", company_name, d_keys, str(detail)[:800])
+                logger.debug("Wanted 회사 상세 (%s): %s", company_name, str(detail)[:300])
 
                 # Wanted 상세: 최상위 키가 "company"
                 d = detail.get("company", detail.get("data", detail))
 
                 if not result.get("employee_count"):
-                    emp, size = _parse_employee(
+                    # detail 서브객체에서 직원 수 탐색
+                    sub = d.get("detail") or {}
+                    raw_emp = (
                         d.get("employee_count") or d.get("employees")
                         or d.get("member_count") or d.get("headcount_range")
+                        or sub.get("employee_count") or sub.get("employees")
+                        or sub.get("member_count")
                     )
+                    emp, size = _parse_employee(raw_emp)
                     if emp:
                         result["employee_count"] = emp
                         result["size"] = size
+
+                # company_tags에서 회사 규모 추출 (스타트업, 대기업 등)
+                if not result.get("size"):
+                    tags = [t.get("title", "") for t in d.get("company_tags", [])]
+                    for tag in tags:
+                        if "스타트업" in tag:
+                            result["size"] = "startup"
+                            break
+                        elif "중소" in tag or "중견" in tag:
+                            result["size"] = "smb"
+                            break
+                        elif "대기업" in tag or "상장" in tag:
+                            result["size"] = "enterprise"
+                            break
 
                 # founded_year: Wanted가 정수로 직접 반환
                 if not result.get("founded_year"):
