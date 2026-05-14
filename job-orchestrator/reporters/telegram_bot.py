@@ -230,6 +230,9 @@ async def handle_command(
             return
         company = parts[1].strip()
         await send(chat_id, f"🔍 <b>{company}</b> 분석 중...")
+        # 캐시 초기화 후 재수집
+        from db import delete_company_cache
+        await delete_company_cache(company)
         from reporters.company_report import analyze_company
         ok = await analyze_company(company)
         if not ok:

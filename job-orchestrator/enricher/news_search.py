@@ -1,115 +1,92 @@
 import logging
 import re
+import xml.etree.ElementTree as ET
 
 import httpx
-from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
 AI_KEYWORDS = ["AI", "LLM", "GPT", "생성형AI", "RAG", "인공지능", "ChatGPT"]
 
-# 모바일 네이버 뉴스 검색 (정적 HTML에 뉴스 포함)
-_MOBILE_URL = "https://m.search.naver.com/search.naver"
-
+_GOOGLE_NEWS_RSS = "https://news.google.com/rss/search"
 _HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     "Accept-Language": "ko-KR,ko;q=0.9",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Referer": "https://m.naver.com/",
 }
 
-_DATE_PATTERN = re.compile(r'\d{4}\.\d{2}\.\d{2}|\d+분 전|\d+시간 전|어제|오늘|\d{2}\.\d{2}')
+_DATE_PATTERN = re.compile(r'\w+, \d+ \w+ \d{4}')
 
 
-def _scrape_naver_news(query: str, max_count: int = 5) -> list[dict]:
+def _scrape_google_news(query: str, max_count: int = 5) -> list[dict]:
     try:
         with httpx.Client(headers=_HEADERS, follow_redirects=True, timeout=15) as client:
             resp = client.get(
-                _MOBILE_URL,
-                params={"where": "m_news", "query": query, "sort": "1"},
+                _GOOGLE_NEWS_RSS,
+                params={"q": query, "hl": "ko", "gl": "KR", "ceid": "KR:ko"},
             )
             resp.raise_for_status()
     except Exception as e:
-        logger.warning("네이버 뉴스 요청 실패 (%s): %s", query, e)
+        logger.warning("Google 뉴스 요청 실패 (%s): %s", query, e)
         return []
 
-    soup = BeautifulSoup(resp.text, "html.parser")
+    try:
+        root = ET.fromstring(resp.text)
+    except ET.ParseError as e:
+        logger.warning("Google 뉴스 XML 파싱 실패 (%s): %s", query, e)
+        return []
+
     articles: list[dict] = []
+    items = root.findall(".//item")
+    logger.info("[뉴스] Google News RSS %d건 (쿼리: %s)", len(items), query)
 
-    # 모바일 뉴스 구조 디버그
-    body = soup.find("body")
-    if body:
-        # 주요 div/ul 클래스 목록 확인
-        top_els = [(el.name, el.get("class", []), el.get("id", "")) for el in body.find_all(["ul", "div", "section"], recursive=False)]
-        logger.info("[뉴스 디버그] body 최상위 태그: %s", top_els[:10])
-    all_a = soup.select("a[href^='http']")
-    logger.info("[뉴스 디버그] http링크 %d개, 첫3개: %s", len(all_a),
-                [(a.get("class"), a.get("href","")[:60]) for a in all_a[:3]])
+    for item in items[:max_count]:
+        title_el = item.find("title")
+        link_el = item.find("link")
+        pub_date_el = item.find("pubDate")
+        source_el = item.find("source")
 
-    # 모바일 뉴스 구조: ul.list_news > li 또는 div.news_wrap
-    containers = soup.select("ul.list_news > li")
+        title = title_el.text.strip() if title_el is not None and title_el.text else ""
+        url = link_el.text.strip() if link_el is not None and link_el.text else ""
+        date = pub_date_el.text.strip() if pub_date_el is not None and pub_date_el.text else ""
+        source = source_el.text.strip() if source_el is not None and source_el.text else ""
 
-    if not containers:
-        containers = soup.select("div.news_wrap")
+        # Google News RSS 날짜 형식 변환 (Mon, 14 May 2026 → 2026.05.14)
+        m = re.search(r'(\d+) (\w+) (\d{4})', date)
+        if m:
+            month_map = {"Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04",
+                         "May": "05", "Jun": "06", "Jul": "07", "Aug": "08",
+                         "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
+            day, mon, year = m.group(1).zfill(2), month_map.get(m.group(2), "01"), m.group(3)
+            date = f"{year}.{mon}.{day}"
 
-    if not containers:
-        # 모바일 대체 구조
-        containers = soup.select("li.bx")
-        containers = [c for c in containers if c.select_one("a[href^='http']")]
+        # 제목에서 출처 제거 (Google RSS: "제목 - 출처" 형식)
+        if " - " in title:
+            parts = title.rsplit(" - ", 1)
+            title = parts[0].strip()
+            if not source:
+                source = parts[1].strip()
 
-    logger.info("[뉴스] 컨테이너 %d개 (쿼리: %s)", len(containers), query)
-
-    for container in containers[:max_count]:
-        # 제목 + URL
-        title_el = (
-            container.select_one("a.news_tit")
-            or container.select_one("a.api_txt_lines")
-            or container.select_one("a[class*='tit']")
-            or container.select_one("a[href^='http']")
-        )
-        if not title_el:
-            continue
-        title = title_el.get_text(strip=True)
-        url = title_el.get("href", "")
-        if not title or not url.startswith("http"):
-            continue
-
-        # 출처
-        source = ""
-        for sel in ["a.info.press", ".press", ".source", "cite", ".info_group a", "a.info"]:
-            el = container.select_one(sel)
-            if el:
-                source = el.get_text(strip=True)
-                break
-
-        # 날짜
-        date = ""
-        for el in container.select("span.info, span.date, span.time, .info_group span, span"):
-            candidate = el.get_text(strip=True)
-            if _DATE_PATTERN.search(candidate):
-                date = candidate
-                break
-
-        articles.append({"title": title, "url": url, "date": date, "source": source})
+        if title and url:
+            articles.append({"title": title, "url": url, "date": date, "source": source})
 
     return articles
 
 
 def fetch_articles(company_name: str) -> list[dict]:
-    """회사명으로 네이버 뉴스 최신 기사 최대 5건 반환."""
-    return _scrape_naver_news(company_name, max_count=5)
+    """회사명으로 Google News 최신 기사 최대 5건 반환."""
+    return _scrape_google_news(company_name, max_count=5)
 
 
 async def fetch(company_name: str) -> dict:
     """AI 관련 뉴스 요약 반환. AI 뉴스 없으면 일반 뉴스로 대체."""
-    ai_articles = _scrape_naver_news(f"{company_name} AI", max_count=5)
+    ai_articles = _scrape_google_news(f"{company_name} AI", max_count=5)
     ai_hits = [a for a in ai_articles if any(kw.lower() in a["title"].lower() for kw in AI_KEYWORDS)]
 
     if ai_hits:
         summary = " / ".join(a["title"] for a in ai_hits[:3])
         return {"ai_products": True, "ai_news_summary": summary}
 
-    general = _scrape_naver_news(company_name, max_count=3)
+    general = _scrape_google_news(company_name, max_count=3)
     if general:
         summary = " / ".join(a["title"] for a in general[:3])
         return {"ai_products": False, "ai_news_summary": summary}

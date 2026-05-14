@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timezone
 
 from db import get_cached_company, upsert_company
-from enricher import crunchbase, jobplanet, thevc, news_search
+from enricher import crunchbase, jobplanet, thevc, wanted_company, news_search
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,9 @@ async def enrich(company_name: str) -> dict:
 
     vc_data = await thevc.fetch(company_name)
     result.update({k: v for k, v in vc_data.items() if v})
+
+    wc_data = await wanted_company.fetch(company_name)
+    result.update({k: v for k, v in wc_data.items() if v})
 
     news_data = await news_search.fetch(company_name)
     result.update({k: v for k, v in news_data.items() if v is not None})

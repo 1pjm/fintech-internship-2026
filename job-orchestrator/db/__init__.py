@@ -95,6 +95,12 @@ async def get_cached_company(company_name: str) -> dict | None:
     return dict(row)
 
 
+async def delete_company_cache(company_name: str) -> None:
+    async with aiosqlite.connect(config.DB_PATH) as db:
+        await db.execute("DELETE FROM companies WHERE company_name = ?", (company_name,))
+        await db.commit()
+
+
 async def upsert_company(data: dict) -> None:
     import json
 
