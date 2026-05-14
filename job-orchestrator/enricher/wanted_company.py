@@ -86,7 +86,8 @@ async def fetch(company_name: str) -> dict:
                 detail_resp = await client.get(f"{_COMPANY_URL}/{company_id}")
                 detail_resp.raise_for_status()
                 detail = detail_resp.json()
-                logger.info("Wanted 회사 상세 (%s): %s", company_name, str(detail)[:500])
+                d_keys = list(detail.get("company", {}).keys())
+                logger.info("Wanted 회사 상세 keys (%s): %s | full: %s", company_name, d_keys, str(detail)[:800])
 
                 # Wanted 상세: 최상위 키가 "company"
                 d = detail.get("company", detail.get("data", detail))
