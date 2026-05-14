@@ -127,9 +127,11 @@ async def screen(jobs: list[dict]) -> tuple[list[dict], dict]:
 
         try:
             result = await _call_ai(job)
+            await asyncio.sleep(2)  # rate limit 방지
         except Exception as e:
             logger.error("AI 스크리닝 오류 (job_id=%s): %s", job_id, e)
             stats["claude_error"] += 1
+            await asyncio.sleep(5)
             continue
 
         screened_at = datetime.now(timezone.utc).isoformat()
