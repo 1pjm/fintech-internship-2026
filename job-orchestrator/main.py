@@ -144,6 +144,18 @@ async def run_pipeline(sources: list[str] | None = None) -> None:
             f"❌ 실패: {send_stats['failed']}건",
         ])
 
+        # 기업분석 리포트 발송
+        from reporters import company_report
+        from enricher.news_search import fetch_articles
+        sent_companies = set()
+        for report in reports:
+            company = report.get("company_name", "")
+            if company and company not in sent_companies:
+                articles = await asyncio.get_event_loop().run_in_executor(None, lambda: fetch_articles(company))
+                await company_report.send(report, articles)
+                sent_companies.add(company)
+                await asyncio.sleep(1)
+
     except Exception as e:
         logger.error("파이프라인 오류: %s", e)
         pipeline_state.errors.append(f"[파이프라인] {e}")

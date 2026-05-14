@@ -83,6 +83,7 @@ async def send_keyboard(chat_id: str | int, text: str) -> None:
             [{"text": "📊 상태"}, {"text": "▶️ 즉시실행"}],
             [{"text": "⏸️ 일시정지"}, {"text": "▶️ 재개"}],
             [{"text": "📋 오늘 공고"}, {"text": "📈 통계"}],
+            [{"text": "🔄 수집모드"}],
         ],
         "resize_keyboard": True,
         "persistent": True,
@@ -193,6 +194,20 @@ async def handle_command(
             f"수집 주기: 원티드 30분 / 사람인 60분"
         )
         await send(chat_id, text_out)
+
+    elif cmd.startswith("/mode") or text.strip().startswith("🔄 수집모드"):
+        parts = text.strip().split()
+        if len(parts) < 2:
+            await send(chat_id, "사용법: /mode entry | /mode career | /mode all\n\n신입: 신입·경력무관 공고만\n경력: 경력직 공고만\nall: 전체")
+            return
+        mode = parts[1].lower()
+        if mode not in ("entry", "career", "all"):
+            await send(chat_id, "❌ 올바른 모드: entry | career | all")
+            return
+        import config as cfg_module
+        cfg_module.config.CAREER_LEVEL = mode
+        mode_name = {"entry": "신입·경력무관", "career": "경력직", "all": "전체"}[mode]
+        await send(chat_id, f"✅ 수집 모드 변경: <b>{mode_name}</b>")
 
     else:
         await send(chat_id, f"❓ 알 수 없는 명령어입니다.\n/help 로 명령어 목록을 확인하세요.")

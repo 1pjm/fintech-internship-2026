@@ -21,6 +21,9 @@ class Config:
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     GEMINI_MODEL: str = "gemini-2.0-flash"
 
+    # 신입/경력 구분 (entry | career | all)
+    CAREER_LEVEL: str = os.getenv("CAREER_LEVEL", "all")
+
     # 원티드
     WANTED_ACCESS_TOKEN: str = os.getenv("WANTED_ACCESS_TOKEN", "")
     WANTED_BASE_URL: str = "https://www.wanted.co.kr/api/v4/jobs"

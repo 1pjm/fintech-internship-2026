@@ -27,6 +27,13 @@ async def _fetch_page(client: httpx.AsyncClient, keyword: str, start: int) -> di
         "start": start,
         "sr": "directhire",
     }
+    if config.CAREER_LEVEL == "entry":
+        params["career_cond"] = "y"
+        params["career_level"] = 0
+    elif config.CAREER_LEVEL == "career":
+        params["career_cond"] = "y"
+        params["career_level"] = 1
+
     resp = await client.get(config.SARAMIN_BASE_URL, params=params, timeout=20)
     resp.raise_for_status()
     return resp.json()

@@ -34,6 +34,11 @@ async def _fetch_page(client: httpx.AsyncClient, category_id: str, offset: int) 
         "offset": offset,
         "tag_type_names": "",
     }
+    if config.CAREER_LEVEL == "entry":
+        params["years[]"] = [0, -1]
+    elif config.CAREER_LEVEL == "career":
+        params["years[]"] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
     headers = dict(HEADERS)
     if config.WANTED_ACCESS_TOKEN:
         headers["Authorization"] = f"Bearer {config.WANTED_ACCESS_TOKEN}"
