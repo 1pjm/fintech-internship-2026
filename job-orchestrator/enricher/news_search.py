@@ -37,39 +37,20 @@ def _scrape_naver_news(query: str, max_count: int = 5) -> list[dict]:
     soup = BeautifulSoup(resp.text, "html.parser")
     articles: list[dict] = []
 
-    # 전략 1: li.bx 컨테이너 기반 (최신 Naver 구조)
-    containers = soup.select("li.bx")
-    logger.info("[뉴스 디버그] li.bx: %d개", len(containers))
+    # 전략 1: li.bx (lineup 정렬바 제외)
+    containers = [c for c in soup.select("li.bx") if "lineup" not in c.get("class", [])]
 
     # 전략 2: ul.list_news > li
     if not containers:
         containers = soup.select("ul.list_news li")
-        logger.info("[뉴스 디버그] ul.list_news li: %d개", len(containers))
 
     # 전략 3: div.news_area 직접
     if not containers:
         containers = soup.select("div.news_area")
-        logger.info("[뉴스 디버그] div.news_area: %d개", len(containers))
 
-    # 전략 4: 응답 HTML 구조 샘플 출력
-    if not containers:
-        body = soup.find("body")
-        if body:
-            logger.warning("[뉴스 디버그] 컨테이너 없음 — body 첫 500자: %s", body.get_text()[:500])
-        # 전략 4: 모든 <a> 중 뉴스처럼 보이는 것 추출
-        all_links = soup.select("a[href^='https://n.news.naver.com'], a[href^='https://news.naver.com']")
-        logger.info("[뉴스 디버그] 네이버 뉴스 링크 직접: %d개", len(all_links))
-        for a in all_links[:max_count]:
-            title = a.get_text(strip=True)
-            url = a.get("href", "")
-            if title and url:
-                articles.append({"title": title, "url": url, "date": "", "source": ""})
-        return articles
-
-    # 첫 번째 컨테이너 내부 전체 HTML 디버그
     if containers:
         first = containers[0]
-        logger.info("[뉴스 디버그] 첫 컨테이너 HTML: %s", str(first)[:1000])
+        logger.info("[뉴스 디버그] 뉴스 컨테이너 수: %d, 첫 HTML: %s", len(containers), str(first)[:600])
 
     for container in containers[:max_count]:
         # 제목 + URL
