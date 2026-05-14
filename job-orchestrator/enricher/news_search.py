@@ -66,12 +66,19 @@ def _scrape_naver_news(query: str, max_count: int = 5) -> list[dict]:
                 articles.append({"title": title, "url": url, "date": "", "source": ""})
         return articles
 
+    # 첫 번째 컨테이너 내부 a 태그 구조 디버그
+    if containers:
+        first = containers[0]
+        for a in first.find_all("a", href=True)[:5]:
+            logger.info("[뉴스 디버그] a태그 class=%s href=%s", a.get("class"), a.get("href", "")[:80])
+
     for container in containers[:max_count]:
         # 제목 + URL
         title_el = (
             container.select_one("a.news_tit")
             or container.select_one("a[class*='tit']")
             or container.select_one("div.news_area a[href^='http']")
+            or container.select_one("a[href^='http']")
         )
         if not title_el:
             continue
