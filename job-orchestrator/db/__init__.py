@@ -77,7 +77,7 @@ async def update_screen_result(job_id: str, source: str, result: str, screened_a
 
 
 async def get_cached_company(company_name: str) -> dict | None:
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     async with aiosqlite.connect(config.DB_PATH) as db:
         db.row_factory = aiosqlite.Row
@@ -88,7 +88,9 @@ async def get_cached_company(company_name: str) -> dict | None:
     if row is None:
         return None
     enriched_at = datetime.fromisoformat(row["enriched_at"])
-    if datetime.utcnow() - enriched_at > timedelta(days=config.COMPANY_CACHE_DAYS):
+    if enriched_at.tzinfo is None:
+        enriched_at = enriched_at.replace(tzinfo=timezone.utc)
+    if datetime.now(timezone.utc) - enriched_at > timedelta(days=config.COMPANY_CACHE_DAYS):
         return None
     return dict(row)
 
