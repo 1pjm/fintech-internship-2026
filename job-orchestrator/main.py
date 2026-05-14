@@ -190,6 +190,19 @@ async def _saramin_job() -> None:
         await run_pipeline(sources=["saramin"])
 
 
+async def _watchlist_job() -> None:
+    from db import watchlist_get_all, watchlist_update_analyzed
+    from reporters.company_report import analyze_company
+    companies = await watchlist_get_all()
+    if not companies:
+        return
+    logger.info("위시리스트 분석 시작 — %d개사", len(companies))
+    for company in companies:
+        await analyze_company(company)
+        await watchlist_update_analyzed(company)
+        await asyncio.sleep(2)
+
+
 async def main() -> None:
     global _scheduler
 
@@ -197,7 +210,7 @@ async def main() -> None:
     logger.info("DB 초기화 완료")
 
     # 스케줄러 시작
-    _scheduler = build_scheduler(_wanted_job, _saramin_job)
+    _scheduler = build_scheduler(_wanted_job, _saramin_job, _watchlist_job)
     _scheduler.start()
     logger.info(
         "스케줄러 시작 — 원티드 %d분 / 사람인 %d분 간격",

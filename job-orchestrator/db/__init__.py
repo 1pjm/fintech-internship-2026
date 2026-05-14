@@ -30,12 +30,21 @@ CREATE TABLE IF NOT EXISTS companies (
 );
 """
 
+CREATE_WATCHLIST_TABLE = """
+CREATE TABLE IF NOT EXISTS watchlist (
+    company_name TEXT PRIMARY KEY,
+    added_at     TEXT,
+    last_analyzed TEXT
+);
+"""
+
 
 async def init_db() -> None:
     config.DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     async with aiosqlite.connect(config.DB_PATH) as db:
         await db.execute(CREATE_JOBS_TABLE)
         await db.execute(CREATE_COMPANIES_TABLE)
+        await db.execute(CREATE_WATCHLIST_TABLE)
         await db.commit()
 
 
@@ -104,5 +113,45 @@ async def upsert_company(data: dict) -> None:
                 "investors": json.dumps(data.get("investors", []), ensure_ascii=False),
                 "ai_products": int(data.get("ai_products", False)),
             },
+        )
+        await db.commit()
+
+
+# ── 위시리스트 ──────────────────────────────────────────────
+
+async def watchlist_add(company_name: str) -> None:
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+    async with aiosqlite.connect(config.DB_PATH) as db:
+        await db.execute(
+            "INSERT OR IGNORE INTO watchlist (company_name, added_at) VALUES (?, ?)",
+            (company_name, now),
+        )
+        await db.commit()
+
+
+async def watchlist_remove(company_name: str) -> bool:
+    async with aiosqlite.connect(config.DB_PATH) as db:
+        cur = await db.execute(
+            "DELETE FROM watchlist WHERE company_name = ?", (company_name,)
+        )
+        await db.commit()
+        return cur.rowcount > 0
+
+
+async def watchlist_get_all() -> list[str]:
+    async with aiosqlite.connect(config.DB_PATH) as db:
+        async with db.execute("SELECT company_name FROM watchlist ORDER BY added_at") as cur:
+            rows = await cur.fetchall()
+    return [r[0] for r in rows]
+
+
+async def watchlist_update_analyzed(company_name: str) -> None:
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+    async with aiosqlite.connect(config.DB_PATH) as db:
+        await db.execute(
+            "UPDATE watchlist SET last_analyzed = ? WHERE company_name = ?",
+            (now, company_name),
         )
         await db.commit()

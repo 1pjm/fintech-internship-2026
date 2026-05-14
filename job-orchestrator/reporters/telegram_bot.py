@@ -17,13 +17,17 @@ TELEGRAM_API = f"https://api.telegram.org/bot{config.TELEGRAM_BOT_TOKEN}"
 HELP_TEXT = """
 🤖 <b>JobMonster 명령어 안내</b>
 
-/status   — 파이프라인 현재 상태 조회
-/run      — 파이프라인 즉시 실행
-/pause    — 자동 수집 일시 중단
-/resume   — 자동 수집 재개
-/jobs     — 오늘 수집된 공고 목록
-/stats    — 누적 통계 조회
-/help     — 이 도움말 보기
+/status      — 파이프라인 현재 상태 조회
+/run         — 파이프라인 즉시 실행
+/pause       — 자동 수집 일시 중단
+/resume      — 자동 수집 재개
+/jobs        — 오늘 공고 + 기업분석 리포트
+/stats       — 누적 통계 조회
+/analyze [기업명] — 특정 기업 즉시 분석
+/watch [기업명]   — 관심 기업 등록
+/unwatch [기업명] — 관심 기업 삭제
+/watchlist   — 관심 기업 목록 조회
+/help        — 이 도움말 보기
 """.strip()
 
 # 파이프라인 상태 공유 객체
@@ -189,6 +193,22 @@ async def handle_command(
     elif cmd == "/jobs":
         jobs = _get_today_jobs()
         await send(chat_id, _format_jobs_summary(jobs))
+        if not jobs:
+            return
+        await send(chat_id, f"🔍 총 <b>{len(jobs)}건</b>의 기업분석 리포트를 순차 발송합니다...")
+        from reporters.company_report import send as send_report
+        from enricher.news_search import fetch_articles
+        sent_companies: set[str] = set()
+        for job in jobs[:10]:
+            company = job.get("company_name", "")
+            if not company or company in sent_companies:
+                continue
+            articles = await asyncio.get_event_loop().run_in_executor(
+                None, lambda c=company: fetch_articles(c)
+            )
+            await send_report(job, articles)
+            sent_companies.add(company)
+            await asyncio.sleep(1)
 
     elif cmd == "/stats":
         jobs = _get_today_jobs()
@@ -201,6 +221,53 @@ async def handle_command(
             f"수집 주기: 원티드 30분 / 사람인 60분"
         )
         await send(chat_id, text_out)
+
+    elif cmd == "/analyze":
+        parts = text.strip().split(maxsplit=1)
+        if len(parts) < 2:
+            await send(chat_id, "사용법: /analyze 기업명\n예) /analyze 카카오페이")
+            return
+        company = parts[1].strip()
+        await send(chat_id, f"🔍 <b>{company}</b> 분석 중...")
+        from reporters.company_report import analyze_company
+        ok = await analyze_company(company)
+        if not ok:
+            await send(chat_id, f"❌ {company} 분석에 실패했습니다.")
+
+    elif cmd == "/watch":
+        parts = text.strip().split(maxsplit=1)
+        if len(parts) < 2:
+            await send(chat_id, "사용법: /watch 기업명\n예) /watch 카카오페이")
+            return
+        company = parts[1].strip()
+        from db import watchlist_add
+        await watchlist_add(company)
+        await send(chat_id, f"✅ <b>{company}</b> 관심 기업에 등록했습니다.")
+
+    elif cmd == "/unwatch":
+        parts = text.strip().split(maxsplit=1)
+        if len(parts) < 2:
+            await send(chat_id, "사용법: /unwatch 기업명\n예) /unwatch 카카오페이")
+            return
+        company = parts[1].strip()
+        from db import watchlist_remove
+        removed = await watchlist_remove(company)
+        if removed:
+            await send(chat_id, f"✅ <b>{company}</b> 관심 기업에서 삭제했습니다.")
+        else:
+            await send(chat_id, f"❌ <b>{company}</b> 는 관심 기업 목록에 없습니다.")
+
+    elif cmd == "/watchlist":
+        from db import watchlist_get_all
+        companies = await watchlist_get_all()
+        if not companies:
+            await send(chat_id, "📭 등록된 관심 기업이 없습니다.\n/watch 기업명 으로 추가하세요.")
+        else:
+            lines = [f"⭐ <b>관심 기업 목록 ({len(companies)}개)</b>\n"]
+            for i, c in enumerate(companies, 1):
+                lines.append(f"{i}. {c}")
+            lines.append("\n분석: /analyze 기업명 | 삭제: /unwatch 기업명")
+            await send(chat_id, "\n".join(lines))
 
     elif text.strip() == "🔄 수집모드" or cmd == "/mode" and len(text.strip().split()) < 2:
         current = config.CAREER_LEVEL
