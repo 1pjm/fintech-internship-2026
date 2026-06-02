@@ -318,7 +318,7 @@ input[type=range]{width:100%;accent-color:var(--primary);height:6px;cursor:point
   <!-- 배분 시뮬 -->
   <span id="s-budget" class="scroll-anchor"></span>
   <div class="card" style="margin-bottom:24px">
-    <div class="ct">기부금 배분 시뮬레이션 <small>CSI 역비례 × 인구규모 가중 배분 제안</small></div>
+    <div class="ct">기부금 배분 시뮬레이션 <small>CSI 제곱 역비례 × 인구규모 · 위험지역(CSI&lt;65) 집중 배분</small></div>
     <div class="budget-row">
       <label style="font-size:13px;font-weight:600">총 배분 예산</label>
       <input type="number" class="bin" id="budget-in" value="100" min="1" style="width:140px">
@@ -785,19 +785,26 @@ const STORES={
 function calcBudget(){
   const total=parseFloat(document.getElementById('budget-in').value)||100;
   const sorted=Object.entries(DATA.csi).sort((a,b)=>a[1].csi-b[1].csi);
-  const weights=sorted.map(([name,d])=>Math.max(0,100-d.csi)*(POPULATION[name]||1));
+  // (100-CSI)² × 인구, CSI≥65인 지역은 0 (위험지역 집중 배분)
+  const weights=sorted.map(([name,d])=>{
+    if(d.csi>=65) return 0;
+    const gap=100-d.csi;
+    return gap*gap*(POPULATION[name]||1);
+  });
   const sum=weights.reduce((a,b)=>a+b,0);
   document.getElementById('budget-tbody').innerHTML=sorted.map(([name,d],i)=>{
-    const pct=(weights[i]/sum*100).toFixed(1);
-    const amt=(weights[i]/sum*total).toFixed(2);
+    const excluded=d.csi>=65;
+    const pct=excluded?'-':(weights[i]/sum*100).toFixed(1)+'%';
+    const amt=excluded?'—':(weights[i]/sum*total).toFixed(2);
     const pop=((POPULATION[name]||0)/10000).toFixed(0);
     const stores=(STORES[name]||0).toLocaleString();
-    return `<tr><td>${i+1}</td><td style="font-weight:600">${name}</td>
+    const rowStyle=excluded?'opacity:.45':'';
+    return `<tr style="${rowStyle}"><td>${excluded?'—':i+1}</td><td style="font-weight:600">${name}</td>
       <td style="color:${csiColor(d.csi)};font-weight:700">${d.csi}</td>
       <td><span class="${csiBadge(d.csi)}">${csiLabel(d.csi)}</span></td>
       <td style="color:var(--g600)">${pop}</td>
       <td style="color:var(--g600)">${stores}</td>
-      <td>${pct}%</td><td style="font-weight:700">${amt}</td></tr>`;
+      <td>${pct}</td><td style="font-weight:700">${amt}</td></tr>`;
   }).join('');
 }
 
