@@ -318,7 +318,7 @@ input[type=range]{width:100%;accent-color:var(--primary);height:6px;cursor:point
   <!-- 배분 시뮬 -->
   <span id="s-budget" class="scroll-anchor"></span>
   <div class="card" style="margin-bottom:24px">
-    <div class="ct">기부금 배분 시뮬레이션 <small>CSI 제곱 역비례 × 인구규모 · 위험지역(CSI&lt;65) 집중 배분</small></div>
+    <div class="ct">기부금 배분 시뮬레이션 <small>CSI² 역비례 × 인구 · 완충구간(55~65) · CSI≥65 제외</small></div>
     <div class="budget-row">
       <label style="font-size:13px;font-weight:600">총 배분 예산</label>
       <input type="number" class="bin" id="budget-in" value="100" min="1" style="width:140px">
@@ -327,7 +327,7 @@ input[type=range]{width:100%;accent-color:var(--primary);height:6px;cursor:point
     </div>
     <div style="overflow-x:auto">
       <table class="dtable">
-        <thead><tr><th>순위</th><th>지역</th><th>CSI 점수</th><th>위험 등급</th><th>유동인구(만명)</th><th>상권 수</th><th>배분 비중</th><th>배분 금액(억원)</th></tr></thead>
+        <thead><tr><th>순위</th><th>지역</th><th>CSI 점수</th><th>위험 등급</th><th>유동인구(만명)</th><th>상권 수</th><th>적용 구간</th><th>배분 비중</th><th>배분 금액(억원)</th></tr></thead>
         <tbody id="budget-tbody"></tbody>
       </table>
     </div>
@@ -782,29 +782,50 @@ const STORES={
   '창원시 의창구':10993,'창원시 진해구':8286,'통영시':7301,
   '하동군':2820,'함안군':2893,'함양군':2097,'합천군':1912
 };
+function budgetTaper(csi){
+  if(csi>=65) return 0;
+  if(csi>=55) return (65-csi)/10; // 완충: 1.0→0.0 선형 감쇠
+  return 1;
+}
+function budgetZoneLabel(csi){
+  if(csi>=65) return '<span style="color:var(--g400);font-size:11px">제외</span>';
+  if(csi>=55){
+    const pct=Math.round((65-csi)/10*100);
+    return `<span style="color:var(--warn);font-size:11px">완충 ${pct}%</span>`;
+  }
+  return '<span style="color:var(--ok);font-size:11px">전액</span>';
+}
 function calcBudget(){
   const total=parseFloat(document.getElementById('budget-in').value)||100;
   const sorted=Object.entries(DATA.csi).sort((a,b)=>a[1].csi-b[1].csi);
-  // (100-CSI)² × 인구, CSI≥65인 지역은 0 (위험지역 집중 배분)
+  // (100-CSI)² × 인구 × taper(CSI)
+  // taper: CSI<55→1, 55≤CSI<65→(65-CSI)/10, CSI≥65→0
   const weights=sorted.map(([name,d])=>{
-    if(d.csi>=65) return 0;
+    const t=budgetTaper(d.csi);
+    if(t===0) return 0;
     const gap=100-d.csi;
-    return gap*gap*(POPULATION[name]||1);
+    return gap*gap*(POPULATION[name]||1)*t;
   });
   const sum=weights.reduce((a,b)=>a+b,0);
+  let rank=0;
   document.getElementById('budget-tbody').innerHTML=sorted.map(([name,d],i)=>{
     const excluded=d.csi>=65;
-    const pct=excluded?'-':(weights[i]/sum*100).toFixed(1)+'%';
+    if(!excluded) rank++;
+    const pct=excluded?'—':(weights[i]/sum*100).toFixed(1)+'%';
     const amt=excluded?'—':(weights[i]/sum*total).toFixed(2);
     const pop=((POPULATION[name]||0)/10000).toFixed(0);
     const stores=(STORES[name]||0).toLocaleString();
-    const rowStyle=excluded?'opacity:.45':'';
-    return `<tr style="${rowStyle}"><td>${excluded?'—':i+1}</td><td style="font-weight:600">${name}</td>
+    const rowStyle=excluded?'opacity:.4':'';
+    return `<tr style="${rowStyle}">
+      <td>${excluded?'—':rank}</td>
+      <td style="font-weight:600">${name}</td>
       <td style="color:${csiColor(d.csi)};font-weight:700">${d.csi}</td>
       <td><span class="${csiBadge(d.csi)}">${csiLabel(d.csi)}</span></td>
       <td style="color:var(--g600)">${pop}</td>
       <td style="color:var(--g600)">${stores}</td>
-      <td>${pct}</td><td style="font-weight:700">${amt}</td></tr>`;
+      <td>${budgetZoneLabel(d.csi)}</td>
+      <td>${pct}</td>
+      <td style="font-weight:700">${amt}</td></tr>`;
   }).join('');
 }
 
