@@ -318,7 +318,7 @@ input[type=range]{width:100%;accent-color:var(--primary);height:6px;cursor:point
   <!-- 배분 시뮬 -->
   <span id="s-budget" class="scroll-anchor"></span>
   <div class="card" style="margin-bottom:24px">
-    <div class="ct">기부금 배분 시뮬레이션 <small>CSI² 역비례 × 인구 · 완충구간(55~65) · CSI≥65 제외</small></div>
+    <div class="ct">기부금 배분 시뮬레이션 <small>CSI² 역비례 × 인구 · 완충구간(50~65) · CSI≥65 제외</small></div>
     <div class="budget-row">
       <label style="font-size:13px;font-weight:600">총 배분 예산</label>
       <input type="number" class="bin" id="budget-in" value="100" min="1" style="width:140px">
@@ -784,13 +784,13 @@ const STORES={
 };
 function budgetTaper(csi){
   if(csi>=65) return 0;
-  if(csi>=55) return (65-csi)/10; // 완충: 1.0→0.0 선형 감쇠
+  if(csi>=50) return (65-csi)/15; // 완충: 1.0→0.0 선형 감쇠 (50~65)
   return 1;
 }
 function budgetZoneLabel(csi){
   if(csi>=65) return '<span style="color:var(--g400);font-size:11px">제외</span>';
-  if(csi>=55){
-    const pct=Math.round((65-csi)/10*100);
+  if(csi>=50){
+    const pct=Math.round((65-csi)/15*100);
     return `<span style="color:var(--warn);font-size:11px">완충 ${pct}%</span>`;
   }
   return '<span style="color:var(--ok);font-size:11px">전액</span>';
