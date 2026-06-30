@@ -226,14 +226,28 @@ def save_merged(merged: list[dict]):
 #    - A6(일반 전세자금대출) 자리를 FSS 실제 상품으로 교체·확장
 # ─────────────────────────────────────────────
 
+CATALOG_FIELDS = [
+    "product_id", "product_name", "product_type",
+    "age_min", "age_max",
+    "income_limit_single", "income_limit_couple", "net_asset_limit",
+    "credit_score_min",
+    "deposit_limit_capital", "deposit_limit_non_capital",
+    "ltv_limit_pct", "max_loan_capital", "max_loan_non_capital",
+    "base_rate_min", "base_rate_max",
+    "max_area_sqm", "guarantee_agency", "dsr_limit_pct",
+    "marriage_within_7y_required", "newborn_within_2y_required", "youth_only",
+    "allowed_property_types", "target_customer", "notes",
+]
+
+
 def update_catalog(merged: list[dict]):
-    # 기존 카탈로그 로드
+    # 기존 카탈로그 로드 (헤더만 있는 빈 파일이어도 안전하게 처리)
     existing = load_csv(CATALOG)
     # 정부지원 상품(A1~A5)만 유지 — A6은 FSS 실제 데이터로 대체
-    gov_products = [r for r in existing if r["product_id"] not in ("A6",)]
+    gov_products = [r for r in existing if r.get("product_id") not in ("A6",)]
 
-    # FSS 수집 상품을 카탈로그 스키마로 변환
-    catalog_fields = list(existing[0].keys())   # 기존 컬럼 순서 그대로
+    # 컬럼 순서: 파일에 데이터가 없어도 고정 스키마 사용
+    catalog_fields = CATALOG_FIELDS
     fss_products   = []
 
     for idx, m in enumerate(merged, start=1):
