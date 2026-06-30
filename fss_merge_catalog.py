@@ -241,8 +241,8 @@ CATALOG_FIELDS = [
 
 
 def update_catalog(merged: list[dict]):
-    # 기존 카탈로그 로드 (헤더만 있는 빈 파일이어도 안전하게 처리)
-    existing = load_csv(CATALOG)
+    # 기존 카탈로그 로드 (파일 없거나 헤더만 있어도 안전하게 처리)
+    existing = load_csv(CATALOG) if os.path.exists(CATALOG) else []
     # 정부지원 상품(A1~A5)만 유지 — A6은 FSS 실제 데이터로 대체
     gov_products = [r for r in existing if r.get("product_id") not in ("A6",)]
 
