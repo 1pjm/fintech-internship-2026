@@ -11,7 +11,7 @@ import os
 import re
 from datetime import date
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = "/content"
 CATALOG  = os.path.join(BASE_DIR, "jeonse_product_catalog.csv")
 
 
