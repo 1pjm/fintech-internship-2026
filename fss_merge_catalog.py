@@ -48,20 +48,33 @@ def parse_loan_lmt(text: str) -> int:
         return 0
     text = text.replace(" ", "").replace(",", "")
 
-    # N억N천만원 or N억원
-    m = re.search(r"(\d+\.?\d*)억(\d+)?천?만?원?", text)
+    # N억N천만원
+    m = re.search(r"(\d+\.?\d*)억(\d+)천만?원?", text)
     if m:
-        eok  = float(m.group(1))
-        chun = float(m.group(2)) * 1000 if m.group(2) else 0
-        return int(eok * 10000 + chun)
+        return int(float(m.group(1)) * 10000 + float(m.group(2)) * 1000)
+
+    # N억N백만원
+    m = re.search(r"(\d+\.?\d*)억(\d+)백만?원?", text)
+    if m:
+        return int(float(m.group(1)) * 10000 + float(m.group(2)) * 100)
+
+    # N억N만원
+    m = re.search(r"(\d+\.?\d*)억(\d+)만?원?", text)
+    if m:
+        return int(float(m.group(1)) * 10000 + float(m.group(2)))
+
+    # N억원
+    m = re.search(r"(\d+\.?\d*)억원?", text)
+    if m:
+        return int(float(m.group(1)) * 10000)
 
     # N백만원
-    m = re.search(r"(\d+)백만원", text)
+    m = re.search(r"(\d+)백만원?", text)
     if m:
         return int(m.group(1)) * 100
 
     # N만원
-    m = re.search(r"(\d+)만원", text)
+    m = re.search(r"(\d+)만원?", text)
     if m:
         return int(m.group(1))
 
