@@ -2,10 +2,15 @@
 raw_transactions.csv (fetch_realprice.py 결과) -> (시도, 주택구분, 연월) 단위로
 갱신계약비율 / 갱신요구권행사비율 / 평균보증금인상률 을 집계한다.
 
-정의 (대화 정리본 9-4절 그대로):
-  갱신계약비율        = contractType == '갱신' 비율            (전체 계약 대비)
-  갱신요구권행사비율   = useRRRight == 'Y' 비율                 (전체 계약 대비)
+정의 (대화 정리본 9-4절 그대로, 단 실제 API 응답값에 맞게 보정):
+  갱신계약비율        = contractType == '갱신' 비율   (contractType이 공백(정보없음)인 행은 분모에서 제외)
+  갱신요구권행사비율   = useRRRight == '사용' 비율      (전체 계약 대비. API 실제값은 'Y'가 아니라 '사용'/공백)
   평균보증금인상률     = mean((deposit - preDeposit) / preDeposit)  (갱신계약만, preDeposit>0)
+
+주의: 실거래가 API의 contractType/useRRRight는 정보가 없을 때 빈 문자열이 아니라
+공백문자(" ")로 채워져 있다 (기존 전세보증대위변제 데이터의 "임대보증금액" 컬럼과 동일한 패턴).
+그대로 '갱신'/'사용' 문자열과만 비교하면 되지만, 공백을 신규/미사용으로 잘못 세지 않도록
+strip() 하고 contractType이 유효값('신규'/'갱신')인 행만 갱신계약비율 분모로 쓴다.
 
 사용법:
     python build_renewal_features.py --in raw_transactions.csv --out renewal_features.csv
@@ -40,14 +45,21 @@ def to_num(s):
 
 
 def aggregate(df, group_cols):
-    grp = df.groupby(group_cols, dropna=False)
+    valid_ct = df[df["contract_type"].isin(["신규", "갱신"])]
+    grp = valid_ct.groupby(group_cols, dropna=False)
     out = grp.agg(
         n_contracts=("contract_type", "size"),
         갱신계약비율=("contract_type", lambda s: (s == "갱신").mean()),
-        갱신요구권행사비율=("use_rr_right", lambda s: (s == "Y").mean()),
     ).reset_index()
 
-    renewal = df[df["contract_type"] == "갱신"].copy()
+    rr = (
+        df.groupby(group_cols, dropna=False)["use_rr_right"]
+        .apply(lambda s: (s == "사용").mean())
+        .reset_index(name="갱신요구권행사비율")
+    )
+    out = out.merge(rr, on=group_cols, how="left")
+
+    renewal = valid_ct[valid_ct["contract_type"] == "갱신"].copy()
     renewal = renewal[renewal["pre_deposit"] > 0]
     renewal["인상률"] = (renewal["deposit"] - renewal["pre_deposit"]) / renewal["pre_deposit"]
     rate = renewal.groupby(group_cols, dropna=False)["인상률"].mean().reset_index()
@@ -62,7 +74,15 @@ def main():
     parser.add_argument("--out", default="renewal_features.csv")
     args = parser.parse_args()
 
-    df = pd.read_csv(args.infile, encoding="utf-8-sig", dtype=str)
+    df = pd.read_csv(args.infile, encoding="utf-8-sig", dtype=str, keep_default_na=False)
+    before = len(df)
+    df = df.drop_duplicates()
+    if len(df) < before:
+        print(f"완전 중복행 {before - len(df)}건 제거 ({before}행 -> {len(df)}행)")
+
+    df["contract_type"] = df["contract_type"].str.strip()
+    df["use_rr_right"] = df["use_rr_right"].str.strip()
+
     df["deposit"] = to_num(df["deposit"])
     df["pre_deposit"] = to_num(df["pre_deposit"])
     df["deal_year"] = to_num(df["deal_year"])

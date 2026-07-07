@@ -2,15 +2,18 @@
 구버전 fetch_realprice.py(진행기록 없음)로 이미 완료한 raw_transactions.csv에서
 진행기록 파일(<out>.progress.csv)을 역산해서 만든다.
 
-가정: 실행 로그에서 아파트/연립다세대/단독다가구는 한 번도 [WARN]이 없었으므로
-      (시도, api_type, 연월) 조합을 전부 'ok'로 표시한다.
-      오피스텔은 실제 raw_transactions.csv에 해당 조합의 행이 있을 때만 'ok'로 표시하고,
-      없는 조합(승인 전파 지연으로 실패했을 가능성)은 표시하지 않아 재실행 시 다시 시도하게 둔다.
+(시도, api_type, 연월) 조합이 raw_transactions.csv에 행으로 실제 존재할 때만 'ok'로 표시한다.
+행이 없는 조합은 재실행 시 다시 시도하도록 기록을 남기지 않는다.
+
+주의: 이전 버전은 아파트/연립다세대/단독다가구를 무조건 'ok'로 간주했었는데,
+실제로는 인천/광주/전남처럼 이 3개 API도 전부 실패한 시도가 있어서 그 가정은 틀렸다.
+데이터가 큰 도시인데 특정 (시도,api_type,월) 조합에 행이 0건이면 거의 항상 수집 실패이지,
+진짜 거래 0건인 경우는 아주 드물다고 보고 전부 재시도 대상으로 남긴다.
 
 사용법:
     python bootstrap_progress.py --raw raw_transactions.csv --start 202201 --end 202412 --out raw_transactions.csv
     (이후 python fetch_realprice.py --start 202201 --end 202412 --out raw_transactions.csv 를
-     그대로 재실행하면 오피스텔 중 비어있는 조합만 재수집된다)
+     그대로 재실행하면 비어있는 조합만 재수집된다)
 """
 import argparse
 import csv
@@ -21,8 +24,6 @@ import pandas as pd
 from fetch_realprice import month_range
 from house_type_map import API_TYPES
 from lawd_codes import LAWD_CODES
-
-ALWAYS_OK_TYPES = {"apt", "rh", "sh"}
 
 
 def main():
@@ -47,7 +48,7 @@ def main():
         for sido in LAWD_CODES:
             for deal_ymd in months:
                 for api_type in API_TYPES:
-                    if api_type in ALWAYS_OK_TYPES or (sido, api_type, deal_ymd) in have_rows:
+                    if (sido, api_type, deal_ymd) in have_rows:
                         writer.writerow({"sido": sido, "api_type": api_type, "deal_ymd": deal_ymd, "status": "ok"})
                         n_ok += 1
                     else:
