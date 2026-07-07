@@ -29,6 +29,9 @@ python fetch_realprice.py --start 202201 --end 202412 --out raw_transactions.csv
 - 데이터포털 트래픽 제한에 걸리면 `--sleep` 값을 늘릴 것.
 - 마이페이지 URL이 `house_type_map.py`의 `API_ENDPOINTS`와 다르면 그 값으로 교체.
 - **"디코딩(일반 인증키)"을 써야 함.** "인코딩" 키를 넣으면 이중 인코딩되어 인증 오류가 난다.
+- 4개 API 중 일부가 아직 승인 대기라 403이 나면, 승인된 것만 `--types`로 지정해서 먼저 수집하고
+  (예: `--types apt,rh,sh`), 나중에 나머지 승인되면 `--types offi`로 그 API만 같은 `--out` 파일에
+  이어서 추가하면 된다(기존 apt/rh/sh 데이터는 중복 저장되지 않음).
 
 ### 2. 집계 (여기서 이어서 처리 가능, 인터넷 불필요)
 ```bash

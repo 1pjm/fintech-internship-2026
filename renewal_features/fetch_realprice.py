@@ -107,7 +107,16 @@ def main():
     parser.add_argument("--end", default="202412", help="YYYYMM")
     parser.add_argument("--out", default="raw_transactions.csv")
     parser.add_argument("--sleep", type=float, default=0.2, help="호출 간 대기(초)")
+    parser.add_argument(
+        "--types", default=",".join(API_TYPES),
+        help="쉼표로 구분한 API 종류 (apt,rh,sh,offi 중 일부). "
+             "예: 오피스텔만 나중에 재수집할 때 --types offi",
+    )
     args = parser.parse_args()
+    selected_types = [t.strip() for t in args.types.split(",") if t.strip()]
+    unknown = [t for t in selected_types if t not in API_TYPES]
+    if unknown:
+        sys.exit(f"알 수 없는 --types 값: {unknown} (apt/rh/sh/offi 중에서 선택)")
 
     service_keys = {
         "apt": os.environ.get("SERVICE_KEY_APT"),
@@ -115,7 +124,7 @@ def main():
         "sh": os.environ.get("SERVICE_KEY_SH"),
         "offi": os.environ.get("SERVICE_KEY_OFFI"),
     }
-    missing = [k for k, v in service_keys.items() if not v]
+    missing = [k for k in selected_types if not service_keys[k]]
     if missing:
         sys.exit(f"환경변수 누락: {missing} (SERVICE_KEY_APT/RH/SH/OFFI 를 export 하세요)")
 
@@ -127,12 +136,12 @@ def main():
 
     session = requests.Session()
     months = list(month_range(args.start, args.end))
-    total_calls = len(LAWD_CODES) * len(months) * len(API_TYPES)
+    total_calls = len(LAWD_CODES) * len(months) * len(selected_types)
     done = 0
 
     for sido, (sigungu_name, lawd_cd) in LAWD_CODES.items():
         for deal_ymd in months:
-            for api_type in API_TYPES:
+            for api_type in selected_types:
                 done += 1
                 try:
                     page_no = 1
