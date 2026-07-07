@@ -32,6 +32,14 @@ python fetch_realprice.py --start 202201 --end 202412 --out raw_transactions.csv
 - 4개 API 중 일부가 아직 승인 대기라 403이 나면, 승인된 것만 `--types`로 지정해서 먼저 수집하고
   (예: `--types apt,rh,sh`), 나중에 나머지 승인되면 `--types offi`로 그 API만 같은 `--out` 파일에
   이어서 추가하면 된다(기존 apt/rh/sh 데이터는 중복 저장되지 않음).
+- 승인 직후 일시적으로 403이 나다가 나중에 정상화되는 경우도 있다(승인 정보가 서버에 반영되는
+  데 시간이 걸림). `fetch_realprice.py`는 매 호출마다 `<out>.progress.csv`에 성공/실패를 기록해두므로,
+  **같은 `--out`으로 다시 실행하면 이미 성공한 조합은 건너뛰고 실패했던 조합만 재시도**한다.
+  단, 진행기록 없는 구버전으로 이미 한 번 완료한 결과가 있다면 먼저 아래로 진행기록을 역산해야 한다:
+  ```bash
+  python bootstrap_progress.py --raw raw_transactions.csv --start 202201 --end 202412 --out raw_transactions.csv
+  python fetch_realprice.py --start 202201 --end 202412 --out raw_transactions.csv
+  ```
 
 ### 2. 집계 (여기서 이어서 처리 가능, 인터넷 불필요)
 ```bash

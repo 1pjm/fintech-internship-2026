@@ -134,6 +134,21 @@ def main():
     if not file_exists:
         writer.writeheader()
 
+    # 이전 실행에서 이미 성공(ok)한 (시도,api_type,연월) 조합은 재실행 시 건너뛴다.
+    # 실패(fail)했던 조합만 다시 호출하므로, 같은 --out 으로 재실행해도 중복 저장되지 않는다.
+    progress_path = args.out + ".progress.csv"
+    done_ok = set()
+    if os.path.exists(progress_path):
+        with open(progress_path, newline="", encoding="utf-8-sig") as pf:
+            for row in csv.DictReader(pf):
+                if row["status"] == "ok":
+                    done_ok.add((row["sido"], row["api_type"], row["deal_ymd"]))
+    progress_exists = os.path.exists(progress_path)
+    progress_f = open(progress_path, "a", newline="", encoding="utf-8-sig")
+    progress_writer = csv.DictWriter(progress_f, fieldnames=["sido", "api_type", "deal_ymd", "status"])
+    if not progress_exists:
+        progress_writer.writeheader()
+
     session = requests.Session()
     months = list(month_range(args.start, args.end))
     total_calls = len(LAWD_CODES) * len(months) * len(selected_types)
@@ -143,6 +158,9 @@ def main():
         for deal_ymd in months:
             for api_type in selected_types:
                 done += 1
+                if (sido, api_type, deal_ymd) in done_ok:
+                    continue
+                status = "ok"
                 try:
                     page_no = 1
                     collected = 0
@@ -160,11 +178,15 @@ def main():
                         page_no += 1
                         time.sleep(args.sleep)
                 except Exception as e:
+                    status = "fail"
                     print(f"[WARN] {sido}/{api_type}/{deal_ymd} 실패: {e}", file=sys.stderr)
+                progress_writer.writerow({"sido": sido, "api_type": api_type, "deal_ymd": deal_ymd, "status": status})
+                progress_f.flush()
                 time.sleep(args.sleep)
             print(f"진행 {done}/{total_calls}: {sido} {deal_ymd} 완료", file=sys.stderr)
 
     out_f.close()
+    progress_f.close()
 
 
 if __name__ == "__main__":
