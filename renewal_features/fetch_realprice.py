@@ -62,7 +62,19 @@ def fetch_one_page(session, api_type, service_key, lawd_cd, deal_ymd, page_no):
     resp = session.get(API_ENDPOINTS[api_type], params=params, timeout=20)
     resp.raise_for_status()
     data = resp.json()
-    body = data.get("response", {}).get("body", {})
+
+    # data.go.kr는 인증/권한 오류일 때 HTTP 200이지만 "response" 키 없이
+    # {"cmmMsgHeader": {...}} 같은 완전히 다른 스키마로 응답하는 경우가 있다.
+    # 이걸 그냥 "결과 0건"으로 넘기면 실패가 성공처럼 기록되니 명시적으로 에러 처리한다.
+    if "response" not in data:
+        raise RuntimeError(f"예상치 못한 응답 스키마(에러로 추정): {data}")
+
+    header = data["response"].get("header", {})
+    result_code = header.get("resultCode")
+    if result_code not in (None, "00", "0"):
+        raise RuntimeError(f"resultCode={result_code} resultMsg={header.get('resultMsg')}")
+
+    body = data["response"].get("body", {})
     total_count = int(body.get("totalCount", 0) or 0)
     items = body.get("items", "")
     if not items:
