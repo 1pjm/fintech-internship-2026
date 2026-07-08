@@ -71,7 +71,7 @@ def fetch_one_page(session, api_type, service_key, lawd_cd, deal_ymd, page_no):
 
     header = data["response"].get("header", {})
     result_code = header.get("resultCode")
-    if result_code not in (None, "00", "0"):
+    if result_code not in (None, "00", "000", "0"):
         raise RuntimeError(f"resultCode={result_code} resultMsg={header.get('resultMsg')}")
 
     body = data["response"].get("body", {})
