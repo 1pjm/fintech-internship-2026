@@ -1,0 +1,9 @@
+flask
+pandas
+numpy
+scikit-learn
+lightgbm
+shap
+joblib
+requests
+openpyxl

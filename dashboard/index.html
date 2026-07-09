@@ -149,6 +149,40 @@
   }
   .pill-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+  .input-form {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-bottom: 20px;
+  }
+  .input-form .field.wide { grid-column: 1 / -1; }
+  @media (max-width: 780px) { .input-form { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .input-form { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+  .field input, .field select {
+    font-family: var(--font-ui); font-size: 14px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 9px 11px; width: 100%;
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  .form-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+  .btn-primary {
+    appearance: none; border: none; background: var(--accent); color: var(--surface);
+    font-family: var(--font-ui); font-size: 14px; font-weight: 700; cursor: pointer;
+    padding: 11px 22px; border-radius: 999px; transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.55; cursor: wait; }
+  .btn-primary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .status-hint { font-size: 13px; color: var(--ink-faint); }
+
+  .banner { border-radius: 10px; padding: 12px 14px; font-size: 13.5px; margin-bottom: 20px; }
+  .banner-error { background: var(--danger-soft); color: var(--danger); }
+  .banner-warning { background: var(--caution-soft); color: var(--caution); }
+  .banner ul { margin: 6px 0 0; padding-left: 18px; }
+  .banner div + div { margin-top: 4px; }
+
+  .empty-state { color: var(--ink-faint); font-size: 14px; text-align: center; padding: 40px 20px; }
+
   .card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     box-shadow: var(--shadow); padding: 22px 24px;
@@ -261,43 +295,78 @@
     <h1>이 매물, 지금 계약해도 괜찮을까요?</h1>
     <p class="lede">모델이 계산한 위험 확률과, 그렇게 판단한 이유 3가지, 그리고 계약 전에 직접 확인해야 할 항목을 보여드립니다.</p>
 
-    <div class="selector-row" role="group" aria-label="예시 매물 선택">
-      <button class="pill-btn" id="btn-case-a" aria-pressed="true" onclick="selectCase('a')">예시 A · 실제 테스트 데이터</button>
-      <button class="pill-btn" id="btn-case-b" aria-pressed="false" onclick="selectCase('b')">예시 B · 가상 고위험 시나리오</button>
-    </div>
-
-    <div class="card hero-card">
-      <div class="score-ring" id="score-ring">
-        <div class="num" id="score-num">—</div>
-        <div class="max">/ 100</div>
+    <form class="card input-form" id="analyze-form" onsubmit="return handleAnalyze(event)">
+      <div class="field wide">
+        <label for="in-address">주소</label>
+        <input type="text" id="in-address" placeholder="예: 서울특별시 강남구 역삼동 123" autocomplete="off" required>
       </div>
-      <div>
-        <div class="grade-pill" id="grade-pill"><span class="dot"></span><span id="grade-text">—</span></div>
-        <p class="verdict" id="verdict-text">—</p>
-        <p class="source-note" id="source-note">—</p>
+      <div class="field">
+        <label for="in-house-type">주택구분</label>
+        <select id="in-house-type" required><option value="">불러오는 중…</option></select>
       </div>
-    </div>
+      <div class="field">
+        <label for="in-contract-month">계약월</label>
+        <input type="month" id="in-contract-month">
+      </div>
+      <div class="field"></div>
+      <div class="field">
+        <label for="in-deposit">임대보증금액 (만원)</label>
+        <input type="number" id="in-deposit" min="0" step="1" placeholder="예: 30000" required>
+      </div>
+      <div class="field">
+        <label for="in-senior-debt">선순위채권금액 (만원)</label>
+        <input type="number" id="in-senior-debt" min="0" step="1" placeholder="예: 0" required>
+      </div>
+      <div class="field">
+        <label for="in-house-value">주택가액 (만원)</label>
+        <input type="number" id="in-house-value" min="0" step="1" placeholder="예: 40000" required>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="btn-analyze">위험도 분석</button>
+        <span class="status-hint" id="status-hint"></span>
+      </div>
+    </form>
 
-    <div class="factor-grid">
+    <div id="error-banner" class="banner banner-error" style="display:none"></div>
+    <div id="warning-banner" class="banner banner-warning" style="display:none"></div>
+
+    <div id="empty-state" class="card empty-state">주소와 계약 정보를 입력하고 <strong>위험도 분석</strong> 버튼을 눌러주세요.</div>
+
+    <div id="result-section" style="display:none">
+      <div class="card hero-card">
+        <div class="score-ring" id="score-ring">
+          <div class="num" id="score-num">—</div>
+          <div class="max">/ 100</div>
+        </div>
+        <div>
+          <div class="grade-pill" id="grade-pill"><span class="dot"></span><span id="grade-text">—</span></div>
+          <p class="verdict" id="verdict-text">—</p>
+          <p class="source-note" id="source-note">—</p>
+        </div>
+      </div>
+
+      <div class="factor-grid">
+        <div class="card">
+          <h2 style="color: var(--danger)">위험도를 높인 요인</h2>
+          <ul class="factor-list" id="list-up"></ul>
+        </div>
+        <div class="card">
+          <h2 style="color: var(--safe)">위험도를 낮춘 요인</h2>
+          <ul class="factor-list" id="list-down"></ul>
+        </div>
+      </div>
+
       <div class="card">
-        <h2 style="color: var(--danger)">위험도를 높인 요인</h2>
-        <ul class="factor-list" id="list-up"></ul>
+        <h2>계약 전 확인해야 할 것</h2>
+        <ul class="checklist" id="checklist"></ul>
       </div>
-      <div class="card">
-        <h2 style="color: var(--safe)">위험도를 낮춘 요인</h2>
-        <ul class="factor-list" id="list-down"></ul>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>계약 전 확인해야 할 것</h2>
-      <ul class="checklist" id="checklist"></ul>
     </div>
 
     <footer class="note">
-      예시 A는 SHAP 값을 실제 노트북 실행 결과(<code>전세사기예측_AUC비교_SHAP추가.ipynb</code>, X_tr 17310번 매물)에서
-      그대로 가져왔습니다(확률값만 파이프라인 검증용으로 임의 지정). 예시 B는 고위험 패턴을 보여주기 위해
-      구성한 가상 시나리오입니다.
+      임대보증금액·선순위채권금액·주택가액은 계약서·등기부등본 기준으로 직접 입력해야 합니다(주소만으로는 알 수 없는
+      계약 고유 정보입니다). 나머지 시세·갱신계약·건물특성 그룹 통계는 입력한 시/도·주택구분·계약월을 바탕으로
+      국토부 실거래가 API에서 그 자리에서 조회해 계산합니다. 조회에 실패하면 경고 배너로 안내되고, 해당 항목은
+      중립값(0)으로 대체되어 결과의 신뢰도가 낮아질 수 있습니다.
     </footer>
   </section>
 
@@ -358,41 +427,6 @@
     document.getElementById('tab-admin').setAttribute('aria-selected', name === 'admin');
   }
 
-  const CASES = {
-    a: {
-      source: '실제 계산 결과 (전세사기예측_AUC비교_SHAP추가.ipynb · X_tr #17310, 확률은 파이프라인 검증용 임의값)',
-      risk_score: 12.0,
-      risk_grade: '낮음',
-      risk_up_factors: [
-        {feature: '시도', shap_value: 0.218, message: '이 지역은 과거 유사 매물에서 사고 비율이 상대적으로 높았습니다.'},
-        {feature: '시세_평균전세보증금', shap_value: 0.065, message: '동일 그룹의 시세 평균 보증금 수준이 위험 신호로 작용했습니다.'},
-        {feature: '평균전용면적', shap_value: 0.056, message: '같은 그룹(지역·유형) 평균 전용면적이 위험 신호로 작용했습니다.'}
-      ],
-      risk_down_factors: [
-        {feature: '선순위채권금액', shap_value: -1.118, message: '선순위채권이 거의 없거나 적어 보증금 회수에 유리합니다.'},
-        {feature: '깡통지수', shap_value: -0.774, message: '깡통전세 위험지수가 낮은 편에 속하는 매물입니다.'},
-        {feature: '시세대비보증금비율', shap_value: -0.347, message: '주변 시세보다 낮거나 비슷하게 보증금이 설정되어 있습니다.'}
-      ],
-      checklist: ['해당 지역 최근 전세사기 피해 통계 확인']
-    },
-    b: {
-      source: '가상 시나리오 (고위험 패턴 설명용으로 구성)',
-      risk_score: 86.0,
-      risk_grade: '위험',
-      risk_up_factors: [
-        {feature: '깡통지수', shap_value: 1.35, message: '깡통전세 위험지수 자체가 높게 산출된 매물입니다.'},
-        {feature: '선순위채권금액', shap_value: 0.92, message: '다른 채권자가 세입자보다 먼저 변제받는 선순위채권이 큽니다.'},
-        {feature: '전세가율', shap_value: 0.68, message: '보증금이 주택가액에 비해 높은 편입니다(전세가율 높음).'}
-      ],
-      risk_down_factors: [
-        {feature: '거래량', shap_value: -0.22, message: '거래가 활발해 시세 파악이 용이한 지역입니다.'},
-        {feature: '평균건축연도', shap_value: -0.08, message: '비교적 신축이라 안정적인 신호로 반영됐습니다.'},
-        {feature: '주택가액', shap_value: -0.05, message: '주택가액 수준이 위험을 낮추는 방향으로 작용했습니다.'}
-      ],
-      checklist: ['깡통전세 위험지역 여부(지자체·HUG 공고) 재확인', '등기부등본에서 근저당권·선순위채권 설정 확인', '전세가율(보증금/주택가액) 직접 재계산해서 확인']
-    }
-  };
-
   const GRADE_META = {
     '낮음': {cls: 'grade-safe', ring: 'var(--safe)', verdict: '이 매물은 위험 신호가 적어 상대적으로 안전한 편입니다.'},
     '주의': {cls: 'grade-caution', ring: 'var(--caution)', verdict: '몇 가지 주의 신호가 있어 아래 체크리스트를 반드시 확인하세요.'},
@@ -414,19 +448,76 @@
       </li>`).join('');
   }
 
-  function selectCase(key) {
-    document.getElementById('btn-case-a').setAttribute('aria-pressed', key === 'a');
-    document.getElementById('btn-case-b').setAttribute('aria-pressed', key === 'b');
+  function showBanner(elId, show, html) {
+    const el = document.getElementById(elId);
+    el.style.display = show ? 'block' : 'none';
+    if (show) el.innerHTML = html;
+  }
 
-    const c = CASES[key];
+  async function loadMeta() {
+    const sel = document.getElementById('in-house-type');
+    try {
+      const res = await fetch('/api/meta');
+      if (!res.ok) throw new Error('status ' + res.status);
+      const meta = await res.json();
+      sel.innerHTML = meta.housetype_values.map(v => `<option value="${v}">${v}</option>`).join('');
+    } catch (e) {
+      sel.innerHTML = '<option value="">불러오지 못했습니다</option>';
+      showBanner('error-banner', true, '주택구분 목록을 불러오지 못했습니다. 백엔드(python3 app.py)가 실행 중인지 확인해주세요.');
+    }
+  }
+
+  async function handleAnalyze(evt) {
+    evt.preventDefault();
+    showBanner('error-banner', false, '');
+    showBanner('warning-banner', false, '');
+
+    const btn = document.getElementById('btn-analyze');
+    const hint = document.getElementById('status-hint');
+    btn.disabled = true;
+    hint.textContent = '실거래가 조회 및 위험도 계산 중…';
+
+    const payload = {
+      address: document.getElementById('in-address').value,
+      house_type: document.getElementById('in-house-type').value,
+      contract_month: document.getElementById('in-contract-month').value || null,
+      deposit: document.getElementById('in-deposit').value,
+      senior_debt: document.getElementById('in-senior-debt').value,
+      house_value: document.getElementById('in-house-value').value,
+    };
+
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showBanner('error-banner', true, '<ul>' + (data.errors || ['알 수 없는 오류가 발생했습니다.']).map(e => `<li>${e}</li>`).join('') + '</ul>');
+        return false;
+      }
+      renderResult(data);
+    } catch (e) {
+      showBanner('error-banner', true, '서버에 연결하지 못했습니다. 백엔드(python3 app.py)가 실행 중인지 확인해주세요.');
+    } finally {
+      btn.disabled = false;
+      hint.textContent = '';
+    }
+    return false;
+  }
+
+  function renderResult(c) {
     const meta = GRADE_META[c.risk_grade];
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('result-section').style.display = 'block';
 
     document.getElementById('score-num').textContent = c.risk_score.toFixed(0);
     document.getElementById('score-ring').style.borderColor = meta.ring;
     document.getElementById('grade-pill').className = 'grade-pill ' + meta.cls;
     document.getElementById('grade-text').textContent = '위험 등급 · ' + c.risk_grade;
     document.getElementById('verdict-text').textContent = meta.verdict;
-    document.getElementById('source-note').textContent = c.source;
+    document.getElementById('source-note').textContent = `인식된 시/도: ${c.resolved_sido} · 실거래가 API 실시간 계산 결과`;
 
     renderFactorList('list-up', c.risk_up_factors, 'up');
     renderFactorList('list-down', c.risk_down_factors, 'down');
@@ -434,6 +525,13 @@
     document.getElementById('checklist').innerHTML = c.checklist.length
       ? c.checklist.map(item => `<li><span class="box"></span>${item}</li>`).join('')
       : '<li><span class="box"></span>추가로 확인할 항목이 없습니다. 일반적인 계약 서류만 확인하세요.</li>';
+
+    const warnLines = [];
+    if (c.fetch_error) warnLines.push(`실거래가 조회 실패: ${c.fetch_error}`);
+    if (c.filled_defaults && c.filled_defaults.length) {
+      warnLines.push(`다음 항목은 실시간 데이터를 가져오지 못해 중립값(0)으로 대체됐습니다: ${c.filled_defaults.join(', ')}`);
+    }
+    showBanner('warning-banner', warnLines.length > 0, warnLines.map(l => `<div>${l}</div>`).join(''));
   }
 
   const MAP_ROWS = [
@@ -449,5 +547,5 @@
   document.getElementById('map-table-body').innerHTML = MAP_ROWS.map(r => `
     <tr><td class="feat">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
 
-  selectCase('a');
+  loadMeta();
 </script>

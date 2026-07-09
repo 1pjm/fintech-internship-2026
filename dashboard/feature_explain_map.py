@@ -78,8 +78,8 @@ FEATURE_EXPLAIN_MAP = {
         "down": "월세 전환 비율이 낮아 전세 선호가 유지되는 지역입니다.",
         "checklist": "-",
     },
-    "보증완료월": {"up": "계약 시점(월)이 위험 신호로 반영됐습니다.", "down": "계약 시점(월)이 안정적인 신호로 반영됐습니다.", "checklist": "-"},
-    "보증완료연도": {"up": "계약 시점(연도)이 위험 신호로 반영됐습니다.", "down": "계약 시점(연도)이 안정적인 신호로 반영됐습니다.", "checklist": "-"},
+    "보증완료_월": {"up": "계약 시점(월)이 위험 신호로 반영됐습니다.", "down": "계약 시점(월)이 안정적인 신호로 반영됐습니다.", "checklist": "-"},
+    "보증완료_연도": {"up": "계약 시점(연도)이 위험 신호로 반영됐습니다.", "down": "계약 시점(연도)이 안정적인 신호로 반영됐습니다.", "checklist": "-"},
     "평균보증금인상률": {
         "up": "최근 갱신 시 보증금 인상률이 높은 편이라 위험 신호로 반영됐습니다.",
         "down": "최근 갱신 시 보증금 인상률이 낮아 안정적으로 반영됐습니다.",
@@ -105,13 +105,29 @@ DEFAULT_EXPLAIN = {
 
 
 def explain_feature(feature_name: str, shap_value: float) -> dict:
-    """feature_name과 SHAP 값(부호)을 받아 사용자 언어 문장 + 체크리스트를 반환한다."""
-    entry = FEATURE_EXPLAIN_MAP.get(feature_name, DEFAULT_EXPLAIN)
+    """feature_name과 SHAP 값(부호)을 받아 사용자 언어 문장 + 체크리스트를 반환한다.
+
+    실서비스 모델은 시도/주택구분을 원-핫 인코딩해서 "시도_서울", "주택구분_오피스텔"
+    같은 컬럼명을 쓰기 때문에, 이 접두사를 벗겨 기본 설명 문구를 찾고 실제 지역/유형명을
+    문구 앞에 붙여준다.
+    """
+    base_name = feature_name
+    detail = None
+    for prefix in ("시도_", "주택구분_"):
+        if feature_name.startswith(prefix):
+            base_name = prefix[:-1]
+            detail = feature_name[len(prefix):]
+            break
+
+    entry = FEATURE_EXPLAIN_MAP.get(base_name, DEFAULT_EXPLAIN)
     direction = "up" if shap_value >= 0 else "down"
+    message = entry[direction]
+    if detail:
+        message = f"{detail} — {message}"
     return {
-        "feature": feature_name,
+        "feature": detail or feature_name,
         "shap_value": shap_value,
         "direction": direction,
-        "message": entry[direction],
+        "message": message,
         "checklist": entry["checklist"],
     }
