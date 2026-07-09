@@ -1,4 +1,5 @@
 flask
+gradio
 pandas
 numpy
 scikit-learn

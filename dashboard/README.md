@@ -16,8 +16,11 @@
 | `feature_explain_map.py` | 모델 변수 → 사용자 언어 변환 테이블 (SHAP 부호에 따라 위험 높임/낮춤 문장 + 체크리스트 매핑, 원-핫 컬럼명도 처리) |
 | `risk_card.py` | `build_risk_card(prob, shap_row)` — 확률 + SHAP 값을 받아 위험 등급·TOP3 요인·체크리스트로 변환 |
 | `test_risk_card.py` | 노트북에 실제 출력된 매물(X_tr #17310)의 SHAP 값으로 파이프라인 검증 |
+| `analyze_core.py` | "주소+계약정보 → 위험 카드" 계산 로직 본체 (모델 로드, 실거래가 조회, SHAP 계산). `app.py`와 `gradio_app.py`가 공유 |
 | `app.py` | Flask 백엔드. `/api/meta`(주택구분 목록), `/api/analyze`(주소+계약정보 → 위험 카드) |
 | `index.html` | 사용자가 실제로 입력하는 대시보드 (`/api/analyze` 호출), Artifact로도 게시됨 |
+| `gradio_app.py` | Colab에서 로컬 설치 없이 실행하는 Gradio 버전. `analyze_core`를 그대로 재사용해 계산 로직은 Flask 버전과 동일 |
+| `colab_run.ipynb` | Colab에서 셀 실행만으로 `gradio_app.py`를 띄우는 노트북 (클론 → 설치 → 키 입력 → 실행) |
 
 ## 자동으로 채워지는 값 vs 직접 입력해야 하는 값
 
@@ -47,6 +50,25 @@
 
 "위험" 등급 컷오프(0.80)는 임의로 정한 게 아니라, 노트북 6장(AUC vs F1)에서 실제로
 F1이 최대가 되는 임계값(`best_t=0.80`)을 그대로 가져왔다.
+
+## Colab에서 바로 실행하기 (설치 없이, 링크로 접속)
+
+로컬에 아무것도 설치하지 않고, 링크만으로 접속 가능한 웹 데모가 필요할 때 쓰는 방법이다.
+
+1. `dashboard/colab_run.ipynb`를 Colab에서 연다 —
+   `https://colab.research.google.com/github/1pjm/fintech-internship-2026/blob/claude/renewal-contract-features-api-25d1gr/dashboard/colab_run.ipynb`
+2. 셀을 위에서부터 순서대로 실행한다 (저장소 클론 → 패키지 설치 → API 키 입력 → 실행).
+3. 마지막 셀 실행 후 출력되는 `https://xxxxx.gradio.live` 링크를 클릭하면 바로 접속된다.
+
+**한계**: 이 링크는 Colab 세션이 켜져 있는 동안만 유효한 임시 링크다(무료 Colab은 유휴 시
+자동 종료, 보통 최대 몇 시간). 계속 쓰려면 노트북을 다시 실행해야 하고, 매번 링크가 바뀐다.
+저장소가 private이면 클론 단계에서 GitHub 토큰이 필요하다(노트북 안에 안내 있음).
+UI는 `index.html`만큼 정교하지 않지만(Gradio 기본 컴포넌트), 계산 로직(`analyze_core.py`)은
+Flask 버전과 완전히 동일하다.
+
+항상 켜져 있는 고정 링크가 필요하면(발표 당일 안정적으로 쓰고 싶다면), Render나 Hugging Face
+Spaces 같은 상시 호스팅에 Flask 앱(`app.py`)을 배포하는 쪽이 낫다 — 필요하면 그 설정 파일도
+추가해줄 수 있다.
 
 ## 로컬에서 실행하기
 
