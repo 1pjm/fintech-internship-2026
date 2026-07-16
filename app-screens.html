@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>모아보미 — 앱 화면 설계</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --font-body: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    --font-display: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    --font-num: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+  }
+  html { background: #ECEDF0; }
+  body { background: #ECEDF0; margin: 0; padding: 0; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+
+<div style="max-width:1760px;margin:0 auto;padding:56px 48px 24px 48px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+    <span style="display:inline-flex;align-items:center;gap:8px;background:#EFF0FF;border-radius:999px;padding:8px 16px">
+      <span style="width:16px;height:16px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/shield-check.svg) center/contain no-repeat"></span>
+      <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#2835BA">PRD v1.4 · 기능명세서 v1.4 기준</span>
+    </span>
+    <span style="font-family:var(--font-body);font-size:13px;color:#757575">Scott Design Template 적용</span>
+  </div>
+  <h1 style="font-family:var(--font-display);font-weight:800;font-size:34px;letter-spacing:-0.02em;color:#333333;margin:0 0 10px 0">모아보미 — 고령층 자산관리 앱 화면 설계</h1>
+  <p style="font-family:var(--font-body);font-size:16px;line-height:1.6;color:#666666;margin:0;max-width:760px">광고 없는 순자산 조회 + 안심 UX + 훅 트리거 알림. MVP의 P0·P1 기능을 17개 화면으로 구성했어요. 각 화면 위 라벨은 기능명세서의 기능 ID예요.</p>
+</div>
+
+<section style="max-width:1760px;margin:0 auto;padding:40px 48px 64px 48px">
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-0.015em;color:#333333;margin:0 0 6px 0">1 · 온보딩 — 신뢰부터</h2>
+  <p style="font-family:var(--font-body);font-size:15px;color:#757575;margin:0 0 24px 0">공신력 배지 상시 노출 · 3단계 이내 일괄 동의 · 쉬운 말 음성 설명 · 가치 설명형 푸시 권한 요청</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">A1 · 시작 화면</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-TRS-F-01</span>
+      </div>
+      <div data-screen-label="A1 시작 화면" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:28px 24px 24px 24px">
+          <div style="display:flex;justify-content:center">
+            <span style="display:inline-flex;align-items:center;gap:8px;background:#EFF0FF;border-radius:999px;padding:11px 18px">
+              <span style="width:19px;height:19px;background:#2835BA;mask:url(https://unpkg.com/lucide-static/icons/shield-check.svg) center/contain no-repeat"></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:15px;color:#2835BA">금융위원회 허가 앱 · 금융감독원 등록</span>
+            </span>
+          </div>
+          <div style="margin-top:56px;text-align:center">
+            <div style="font-family:var(--font-display);font-weight:800;font-size:54px;letter-spacing:-0.02em;color:#5F6BEA">모아보미</div>
+            <div style="margin-top:14px;font-family:var(--font-display);font-weight:700;font-size:24px;line-height:1.4;letter-spacing:-0.015em;color:#333333">내 돈을 한눈에,<br>안심하고 보세요</div>
+            <div style="margin-top:10px;font-family:var(--font-body);font-size:17px;color:#757575">흩어진 통장·보험·연금을 모아 보여드려요</div>
+          </div>
+          <div style="margin-top:36px;display:flex;flex-direction:column;gap:14px;padding:0 8px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#DCF2E8;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/ban.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:500;font-size:17px;color:#4B4B4B">광고와 상품 추천이 없어요</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#DFF4FF;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#4D9BFF;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:500;font-size:17px;color:#4B4B4B">쉬운 말 음성 설명이 기본이에요</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#FFF4E9;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#FF900D;mask:url(https://unpkg.com/lucide-static/icons/zoom-in.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:500;font-size:17px;color:#4B4B4B">큰 글씨로 보여드려요</span>
+            </div>
+          </div>
+          <div style="margin-top:auto">
+            <div style="height:60px;border-radius:30px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:20px">시작하기</div>
+            <div style="margin-top:16px;text-align:center;font-family:var(--font-body);font-size:16px;color:#757575;text-decoration:underline;text-underline-offset:3px">복지관 담당자와 함께 시작하기</div>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;background:#F5F5F5;padding:15px 24px;display:flex;gap:9px;align-items:center;justify-content:center">
+          <span style="flex:0 0 auto;width:18px;height:18px;background:#666666;mask:url(https://unpkg.com/lucide-static/icons/lock.svg) center/contain no-repeat"></span>
+          <span style="font-family:var(--font-body);font-weight:500;font-size:15px;color:#666666">이 앱은 절대 전화로 돈을 요구하지 않습니다</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">A2 · 자산 연결 — 기관 선택</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-MDA-F-01</span>
+      </div>
+      <div data-screen-label="A2 기관 선택" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:56px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">자산 연결 <span style="color:#5F6BEA">1</span> / 3</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:0 0 auto;display:flex;gap:6px;padding:4px 24px 0 24px">
+          <span style="flex:1;height:5px;border-radius:3px;background:#5F6BEA"></span>
+          <span style="flex:1;height:5px;border-radius:3px;background:#EEEEEE"></span>
+          <span style="flex:1;height:5px;border-radius:3px;background:#EEEEEE"></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:24px;overflow:hidden">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:23px;line-height:1.4;letter-spacing:-0.015em;color:#333333">어느 곳 자산을<br>보여드릴까요?</div>
+          <div style="margin-top:8px;font-family:var(--font-body);font-size:16px;color:#757575">여러 곳을 한 번에 고를 수 있어요</div>
+          <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="position:relative;border:2px solid #5F6BEA;background:#EFF0FF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <span style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:13px;background:#5F6BEA;display:flex;align-items:center;justify-content:center"><span style="width:15px;height:15px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span></span>
+              <span style="width:44px;height:44px;border-radius:14px;background:#FFF4E9;display:flex;align-items:center;justify-content:center"><span style="width:23px;height:23px;background:#FF900D;mask:url(https://unpkg.com/lucide-static/icons/landmark.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">KB국민은행</span>
+            </div>
+            <div style="position:relative;border:2px solid #5F6BEA;background:#EFF0FF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <span style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:13px;background:#5F6BEA;display:flex;align-items:center;justify-content:center"><span style="width:15px;height:15px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span></span>
+              <span style="width:44px;height:44px;border-radius:14px;background:#DCF2E8;display:flex;align-items:center;justify-content:center"><span style="width:23px;height:23px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/landmark.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">NH농협은행</span>
+            </div>
+            <div style="position:relative;border:1px solid #E1E1E1;background:#FFFFFF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <span style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:13px;border:2px solid #CACACA"></span>
+              <span style="width:44px;height:44px;border-radius:14px;background:#DFF4FF;display:flex;align-items:center;justify-content:center"><span style="width:23px;height:23px;background:#4D9BFF;mask:url(https://unpkg.com/lucide-static/icons/landmark.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">신한은행</span>
+            </div>
+            <div style="position:relative;border:1px solid #E1E1E1;background:#FFFFFF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <span style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:13px;border:2px solid #CACACA"></span>
+              <span style="width:44px;height:44px;border-radius:14px;background:#ECEAF5;display:flex;align-items:center;justify-content:center"><span style="width:23px;height:23px;background:#8B5CF6;mask:url(https://unpkg.com/lucide-static/icons/landmark.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">우리은행</span>
+            </div>
+            <div style="position:relative;border:2px solid #5F6BEA;background:#EFF0FF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <span style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:13px;background:#5F6BEA;display:flex;align-items:center;justify-content:center"><span style="width:15px;height:15px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span></span>
+              <span style="width:44px;height:44px;border-radius:14px;background:#DCF2E8;display:flex;align-items:center;justify-content:center"><span style="width:23px;height:23px;background:#0A9871;mask:url(https://unpkg.com/lucide-static/icons/building-2.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">국민연금공단</span>
+            </div>
+            <div style="position:relative;border:1px solid #E1E1E1;background:#FFFFFF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <span style="position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:13px;border:2px solid #CACACA"></span>
+              <span style="width:44px;height:44px;border-radius:14px;background:#FFE1E5;display:flex;align-items:center;justify-content:center"><span style="width:23px;height:23px;background:#F189C5;mask:url(https://unpkg.com/lucide-static/icons/umbrella.svg) center/contain no-repeat"></span></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">삼성생명</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;padding-top:16px">
+            <div style="height:60px;border-radius:30px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:20px">3곳 연결하기</div>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;background:#F5F5F5;padding:15px 24px;display:flex;gap:9px;align-items:center;justify-content:center">
+          <span style="flex:0 0 auto;width:18px;height:18px;background:#666666;mask:url(https://unpkg.com/lucide-static/icons/lock.svg) center/contain no-repeat"></span>
+          <span style="font-family:var(--font-body);font-weight:500;font-size:15px;color:#666666">이 앱은 절대 전화로 돈을 요구하지 않습니다</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">A3 · 일괄 동의 + 음성 설명</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-MDA-F-01 · F-02</span>
+      </div>
+      <div data-screen-label="A3 일괄 동의" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:56px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">자산 연결 <span style="color:#5F6BEA">3</span> / 3</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:0 0 auto;display:flex;gap:6px;padding:4px 24px 0 24px">
+          <span style="flex:1;height:5px;border-radius:3px;background:#5F6BEA"></span>
+          <span style="flex:1;height:5px;border-radius:3px;background:#5F6BEA"></span>
+          <span style="flex:1;height:5px;border-radius:3px;background:#5F6BEA"></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:24px;overflow:hidden">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:23px;line-height:1.4;letter-spacing:-0.015em;color:#333333">마지막이에요.<br>아래 내용에 동의해 주세요</div>
+          <div style="margin-top:18px;background:#EFF0FF;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px">
+            <span style="flex:0 0 auto;width:30px;height:30px;border-radius:15px;background:#5F6BEA;display:flex;align-items:center;justify-content:center"><span style="width:17px;height:17px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span></span>
+            <span style="font-family:var(--font-body);font-weight:700;font-size:19px;color:#2835BA">모두 동의하기</span>
+          </div>
+          <div style="margin-top:14px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px;padding:14px 4px;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">내 자산 정보 가져오기</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;border:1px solid #E1E1E1;border-radius:999px;padding:7px 12px"><span style="width:15px;height:15px;background:#666666;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span><span style="font-family:var(--font-body);font-size:14px;color:#666666">왜 필요한가요?</span></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:14px 4px">
+              <span style="flex:0 0 auto;width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">본인 확인 정보 이용</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;background:#5F6BEA;border-radius:999px;padding:7px 12px"><span style="width:15px;height:15px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span><span style="font-family:var(--font-body);font-weight:500;font-size:14px;color:#FFFFFF">듣는 중</span></span>
+            </div>
+            <div style="margin:0 0 6px 32px;background:#F5F5F5;border-radius:12px;padding:13px 14px;font-family:var(--font-body);font-size:15px;line-height:1.55;color:#4B4B4B">&ldquo;본인이 맞는지 확인할 때만 쓰는 정보예요. 다른 곳에 보내지 않아요.&rdquo;</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:14px 4px;border-top:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">일주일마다 자산 새로 불러오기</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;border:1px solid #E1E1E1;border-radius:999px;padding:7px 12px"><span style="width:15px;height:15px;background:#666666;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span><span style="font-family:var(--font-body);font-size:14px;color:#666666">왜 필요한가요?</span></span>
+            </div>
+          </div>
+          <div style="margin-top:auto;padding-top:16px">
+            <div style="height:60px;border-radius:30px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:20px">동의하고 연결하기</div>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;background:#F5F5F5;padding:15px 24px;display:flex;gap:9px;align-items:center;justify-content:center">
+          <span style="flex:0 0 auto;width:18px;height:18px;background:#666666;mask:url(https://unpkg.com/lucide-static/icons/lock.svg) center/contain no-repeat"></span>
+          <span style="font-family:var(--font-body);font-weight:500;font-size:15px;color:#666666">이 앱은 절대 전화로 돈을 요구하지 않습니다</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">A4 · 연결 완료 + 알림 권한</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-MDA-F-01 · HOK-F-01</span>
+      </div>
+      <div data-screen-label="A4 연결 완료" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:28px 24px 24px 24px;overflow:hidden">
+          <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+            <span style="width:72px;height:72px;border-radius:36px;background:#1EBF80;display:flex;align-items:center;justify-content:center"><span style="width:38px;height:38px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span></span>
+            <div style="margin-top:16px;font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:-0.018em;color:#333333">연결이 끝났어요!</div>
+            <div style="margin-top:6px;font-family:var(--font-body);font-size:15px;color:#757575">오늘 오후 2:30 연결</div>
+          </div>
+          <div style="margin-top:22px;border:1px solid #E1E1E1;border-radius:16px;padding:6px 16px">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:36px;height:36px;border-radius:12px;background:#FFF4E9;display:flex;align-items:center;justify-content:center"><span style="width:19px;height:19px;background:#FF900D;mask:url(https://unpkg.com/lucide-static/icons/landmark.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">KB국민은행</span>
+              <span style="width:20px;height:20px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:36px;height:36px;border-radius:12px;background:#DCF2E8;display:flex;align-items:center;justify-content:center"><span style="width:19px;height:19px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/landmark.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">NH농협은행</span>
+              <span style="width:20px;height:20px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0">
+              <span style="flex:0 0 auto;width:36px;height:36px;border-radius:12px;background:#ECEAF5;display:flex;align-items:center;justify-content:center"><span style="width:19px;height:19px;background:#8B5CF6;mask:url(https://unpkg.com/lucide-static/icons/building-2.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">국민연금공단</span>
+              <span style="width:20px;height:20px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span>
+            </div>
+          </div>
+          <div style="margin-top:14px;background:#F5F5F5;border-radius:16px;padding:18px;text-align:center">
+            <div style="font-family:var(--font-body);font-weight:500;font-size:15px;color:#666666">지금 보이는 내 자산</div>
+            <div style="margin-top:6px;font-family:var(--font-num);font-weight:800;font-size:34px;letter-spacing:-0.02em;color:#333333">4,230만원</div>
+          </div>
+          <div style="margin-top:14px;background:#EFF0FF;border-radius:16px;padding:16px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#FFFFFF;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/bell.svg) center/contain no-repeat"></span></span>
+              <div style="flex:1">
+                <div style="font-family:var(--font-body);font-weight:700;font-size:17px;line-height:1.45;color:#333333">손주 생일 알림을 받으시겠어요?</div>
+                <div style="margin-top:3px;font-family:var(--font-body);font-size:14px;color:#757575">언제든 끌 수 있어요</div>
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px">
+              <span style="flex:1;height:48px;border-radius:24px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:700;font-size:16px">알림 받기</span>
+              <span style="flex:1;height:48px;border-radius:24px;border:1px solid #E1E1E1;background:#FFFFFF;color:#666666;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:500;font-size:16px">나중에</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;padding-top:14px">
+            <div style="height:60px;border-radius:30px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:20px">내 자산 보러 가기</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">A5 · 복지관 담당자 모드</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-SUP-F-01</span>
+      </div>
+      <div data-screen-label="A5 담당자 모드" style="width:375px;height:812px;background:#FAFAFA;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:56px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">함께 설치 도우미</span>
+          <span style="background:#FFF4E9;border-radius:999px;padding:6px 12px;font-family:var(--font-body);font-weight:700;font-size:13px;color:#FF900D">담당자용</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px 24px 24px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #E1E1E1;border-radius:16px;padding:14px 16px">
+            <span style="flex:0 0 auto;width:40px;height:40px;border-radius:20px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/user-round.svg) center/contain no-repeat"></span></span>
+            <div>
+              <div style="font-family:var(--font-body);font-weight:700;font-size:17px;color:#333333">박순자님과 함께 진행 중</div>
+              <div style="font-family:var(--font-body);font-size:14px;color:#757575">마포노인복지관 · 오늘 오후 2시</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;background:#FFFFFF;border:1px solid #E1E1E1;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px">
+            <span style="flex:0 0 auto;width:30px;height:30px;border-radius:15px;background:#1EBF80;display:flex;align-items:center;justify-content:center"><span style="width:16px;height:16px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">1단계 · 앱 설치</div>
+              <div style="font-family:var(--font-body);font-size:14px;color:#0A9871">완료했어요</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;background:#FFFFFF;border:2px solid #5F6BEA;border-radius:16px;padding:16px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="flex:0 0 auto;width:30px;height:30px;border-radius:15px;background:#5F6BEA;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-weight:700;font-size:15px;color:#FFFFFF">2</span>
+              <div style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">2단계 · 본인 인증</div>
+            </div>
+            <div style="margin-top:10px;font-family:var(--font-body);font-size:15px;line-height:1.55;color:#4B4B4B">어르신 휴대폰에서 PASS 인증을 진행해 주세요. 아래 순서대로 안내해 드리면 돼요.</div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="flex:0 0 auto;width:24px;height:24px;border-radius:8px;background:#5F6BEA;display:flex;align-items:center;justify-content:center"><span style="width:14px;height:14px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span></span>
+                <span style="font-family:var(--font-body);font-size:15px;color:#4B4B4B">PASS 앱이 설치되어 있는지 확인</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="flex:0 0 auto;width:24px;height:24px;border-radius:8px;border:2px solid #CACACA"></span>
+                <span style="font-family:var(--font-body);font-size:15px;color:#4B4B4B">이름·주민번호 앞자리 입력 안내</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="flex:0 0 auto;width:24px;height:24px;border-radius:8px;border:2px solid #CACACA"></span>
+                <span style="font-family:var(--font-body);font-size:15px;color:#4B4B4B">문자 인증번호 직접 입력하시도록 안내</span>
+              </div>
+            </div>
+            <div style="margin-top:14px;height:50px;border-radius:25px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:700;font-size:16px">2단계 완료 표시하기</div>
+          </div>
+          <div style="margin-top:12px;background:#FFFFFF;border:1px solid #E1E1E1;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px;opacity:0.6">
+            <span style="flex:0 0 auto;width:30px;height:30px;border-radius:15px;background:#EEEEEE;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-weight:700;font-size:15px;color:#8E8E8E">3</span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">3단계 · 연결 확인</div>
+              <div style="font-family:var(--font-body);font-size:14px;color:#757575">어르신 홈 화면에 자산이 보이면 완료예요</div>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;gap:9px;align-items:flex-start;padding-top:14px">
+            <span style="flex:0 0 auto;width:17px;height:17px;margin-top:2px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/info.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-size:14px;line-height:1.5;color:#757575">어르신 화면은 담당자 기기에 보이지 않아요. 옆에서 안내만 도와드려요.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<section style="max-width:1760px;margin:0 auto;padding:0 48px 64px 48px">
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-0.015em;color:#333333;margin:0 0 6px 0">2 · 홈 — 광고 없는 순자산 조회</h2>
+  <p style="font-family:var(--font-body);font-size:15px;color:#757575;margin:0 0 24px 0">정보 우선순위 고정: ①순자산 총합(32sp+) ②유형별 소계 ③오늘의 발견 카드 ④기타 알림 · 광고·추천 배너 없음</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">B1 · 홈 화면</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-HOM-F-01 · F-02 · HOK-F-08</span>
+      </div>
+      <div data-screen-label="B1 홈 화면" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 24px">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:#EFF0FF;border-radius:999px;padding:6px 11px">
+            <span style="width:14px;height:14px;background:#2835BA;mask:url(https://unpkg.com/lucide-static/icons/shield-check.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:700;font-size:12px;color:#2835BA">금융위 허가 · 금감원 등록</span>
+          </span>
+          <div style="display:flex;gap:14px;align-items:center">
+            <span style="width:24px;height:24px;background:#4B4B4B;mask:url(https://unpkg.com/lucide-static/icons/share-2.svg) center/contain no-repeat"></span>
+            <span style="width:24px;height:24px;background:#4B4B4B;mask:url(https://unpkg.com/lucide-static/icons/bell.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:14px 24px 0 24px;overflow:hidden">
+          <div style="font-family:var(--font-body);font-weight:500;font-size:17px;color:#666666">박순자님의 순자산</div>
+          <div style="margin-top:6px;font-family:var(--font-num);font-weight:800;font-size:42px;letter-spacing:-0.02em;color:#333333">4,230만원</div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--font-body);font-size:14px;color:#8E8E8E">오늘 오후 2:30 기준</span>
+            <span style="display:inline-flex;align-items:center;gap:5px;border:1px solid #E1E1E1;border-radius:999px;padding:5px 10px">
+              <span style="width:13px;height:13px;background:#666666;mask:url(https://unpkg.com/lucide-static/icons/refresh-cw.svg) center/contain no-repeat"></span>
+              <span style="font-family:var(--font-body);font-size:13px;color:#666666">새로고침</span>
+            </span>
+          </div>
+          <div style="margin-top:14px;display:flex">
+            <span style="display:inline-flex;align-items:center;gap:8px;background:#EFF0FF;border-radius:999px;padding:11px 16px">
+              <span style="width:18px;height:18px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:15px;color:#5F6BEA">화면 전체 읽어주기</span>
+            </span>
+          </div>
+          <div style="margin-top:18px;background:#F5F5F5;border-radius:16px;padding:4px 16px">
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#DFF4FF;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#4D9BFF;mask:url(https://unpkg.com/lucide-static/icons/wallet.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:17px;color:#333333">예금</span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:19px;color:#333333">2,850만원</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#DCF2E8;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/umbrella.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:17px;color:#333333">보험</span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:19px;color:#333333">980만원</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#ECEAF5;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#8B5CF6;mask:url(https://unpkg.com/lucide-static/icons/piggy-bank.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:17px;color:#333333">연금</span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:19px;color:#333333">400만원</span>
+            </div>
+          </div>
+          <div style="margin-top:14px;border:1px solid #F2DFA8;background:#FFFBEE;border-radius:16px;padding:16px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:18px;height:18px;background:#C99700;mask:url(https://unpkg.com/lucide-static/icons/coins.svg) center/contain no-repeat"></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:13px;color:#9A7400">오늘의 발견 · 내 돈 찾기</span>
+            </div>
+            <div style="margin-top:8px;display:flex;align-items:center;gap:10px">
+              <span style="flex:1;font-family:var(--font-body);font-weight:700;font-size:18px;line-height:1.5;color:#333333">잊고 있던 계좌에 87만원이 잠자고 있어요</span>
+              <span style="flex:0 0 auto;width:24px;height:24px;background:#9A7400;mask:url(https://unpkg.com/lucide-static/icons/chevron-right.svg) center/contain no-repeat"></span>
+            </div>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;border-top:1px solid #EEEEEE;display:flex;padding:10px 8px 18px 8px">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/home.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:700;font-size:13px;color:#5F6BEA">홈</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/bell.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">알림함</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/shield.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">안전</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/settings.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">설정</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin:10px 4px 0 4px;font-family:var(--font-body);font-size:13px;line-height:1.5;color:#8E8E8E">광고·추천 배너 없음(P0 정책) · 발견 카드는 3순위 고정 슬롯</div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">B2 · 알림함</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-ALT-F-05</span>
+      </div>
+      <div data-screen-label="B2 알림함" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:56px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 24px">
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:20px;color:#333333">알림함</span>
+          <span style="font-family:var(--font-body);font-size:14px;color:#8E8E8E">90일 동안 보관돼요</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:8px 24px 0 24px;overflow:hidden">
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 0;border-bottom:1px solid #EEEEEE">
+            <span style="flex:0 0 auto;width:44px;height:44px;border-radius:14px;background:#FFF4E9;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#FF900D;mask:url(https://unpkg.com/lucide-static/icons/coins.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:700;font-size:16px;line-height:1.45;color:#333333">잊고 있던 계좌에 87만원이 잠자고 있어요</div>
+              <div style="margin-top:3px;font-family:var(--font-body);font-size:14px;color:#8E8E8E">내 돈 찾기 · 오늘</div>
+            </div>
+            <span style="flex:0 0 auto;width:10px;height:10px;border-radius:5px;background:#FE324E;margin-top:6px"></span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 0;border-bottom:1px solid #EEEEEE">
+            <span style="flex:0 0 auto;width:44px;height:44px;border-radius:14px;background:#DCF2E8;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/piggy-bank.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:500;font-size:16px;line-height:1.45;color:#333333">오늘 국민연금이 입금됐어요</div>
+              <div style="margin-top:3px;font-family:var(--font-body);font-size:14px;color:#8E8E8E">연금 입금 · 6월 25일</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 0;border-bottom:1px solid #EEEEEE">
+            <span style="flex:0 0 auto;width:44px;height:44px;border-radius:14px;background:#FFE1E5;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#F189C5;mask:url(https://unpkg.com/lucide-static/icons/gift.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:500;font-size:16px;line-height:1.45;color:#333333">손주 민준이 첫 생일이 2달 뒤예요</div>
+              <div style="margin-top:3px;font-family:var(--font-body);font-size:14px;color:#8E8E8E">가족 이벤트 · 6월 10일</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 0;border-bottom:1px solid #EEEEEE">
+            <span style="flex:0 0 auto;width:44px;height:44px;border-radius:14px;background:#ECEAF5;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#8B5CF6;mask:url(https://unpkg.com/lucide-static/icons/award.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:500;font-size:16px;line-height:1.45;color:#333333">3개월 연속 직접 확인하셨어요</div>
+              <div style="margin-top:3px;font-family:var(--font-body);font-size:14px;color:#8E8E8E">습관 배지 · 6월 1일</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 0;opacity:0.55">
+            <span style="flex:0 0 auto;width:44px;height:44px;border-radius:14px;background:#F5F5F5;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/eye-off.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:500;font-size:16px;line-height:1.45;color:#666666">찾아가지 않은 보험금 23만원이 있어요</div>
+              <div style="margin-top:3px;font-family:var(--font-body);font-size:14px;color:#8E8E8E">숨김 · 30일 동안 알리지 않아요</div>
+            </div>
+            <span style="flex:0 0 auto;border:1px solid #E1E1E1;border-radius:999px;padding:6px 12px;font-family:var(--font-body);font-size:13px;color:#666666">복원</span>
+          </div>
+          <div style="margin-top:auto;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #E1E1E1;border-radius:999px;padding:13px 0">
+            <span style="width:18px;height:18px;background:#666666;mask:url(https://unpkg.com/lucide-static/icons/settings.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:15px;color:#666666">알림 설정 바꾸기</span>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;border-top:1px solid #EEEEEE;display:flex;padding:10px 8px 18px 8px">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/home.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">홈</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/bell.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:700;font-size:13px;color:#5F6BEA">알림함</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/shield.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">안전</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/settings.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">설정</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">B3 · 자녀 공유 — 읽기 전용</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-SUP-F-02</span>
+      </div>
+      <div data-screen-label="B3 자녀 공유 화면" style="width:375px;height:812px;background:#FAFAFA;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 24px;background:#FFFFFF;border-bottom:1px solid #EEEEEE">
+          <span style="font-family:var(--font-display);font-weight:800;font-size:18px;color:#5F6BEA">모아보미</span>
+          <span style="font-family:var(--font-body);font-size:15px;color:#666666">공유된 자산 화면</span>
+          <span style="margin-left:auto;background:#F5F5F5;border-radius:999px;padding:6px 12px;font-family:var(--font-body);font-weight:700;font-size:13px;color:#666666">읽기 전용</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px;overflow:hidden">
+          <div style="background:#EFF0FF;border-radius:14px;padding:13px 16px;display:flex;gap:9px;align-items:flex-start">
+            <span style="flex:0 0 auto;width:17px;height:17px;margin-top:2px;background:#2835BA;mask:url(https://unpkg.com/lucide-static/icons/clock.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-size:14px;line-height:1.5;color:#2835BA">박순자님이 공유했어요 · 6월 13일 오후 2시까지 볼 수 있어요 (48시간)</span>
+          </div>
+          <div style="margin-top:20px;background:#FFFFFF;border:1px solid #E1E1E1;border-radius:20px;padding:24px;text-align:center">
+            <div style="font-family:var(--font-body);font-weight:500;font-size:16px;color:#666666">어머니의 순자산</div>
+            <div style="margin-top:8px;font-family:var(--font-num);font-weight:800;font-size:38px;letter-spacing:-0.02em;color:#333333">4,230만원</div>
+            <div style="margin-top:6px;font-family:var(--font-body);font-size:14px;color:#8E8E8E">오늘 오후 2:30 기준</div>
+          </div>
+          <div style="margin-top:14px;background:#FFFFFF;border:1px solid #E1E1E1;border-radius:16px;padding:4px 16px">
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#DFF4FF;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#4D9BFF;mask:url(https://unpkg.com/lucide-static/icons/wallet.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:17px;color:#333333">예금 <span style="color:#8E8E8E;font-size:14px">· 기관명 비공개</span></span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:18px;color:#333333">2,850만원</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#DCF2E8;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/umbrella.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:17px;color:#333333">보험 <span style="color:#8E8E8E;font-size:14px">· 기관명 비공개</span></span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:18px;color:#333333">980만원</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+              <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#ECEAF5;display:flex;align-items:center;justify-content:center"><span style="width:21px;height:21px;background:#8B5CF6;mask:url(https://unpkg.com/lucide-static/icons/piggy-bank.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:17px;color:#333333">연금 <span style="color:#8E8E8E;font-size:14px">· 기관명 비공개</span></span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:18px;color:#333333">400만원</span>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:9px;align-items:flex-start">
+            <span style="flex:0 0 auto;width:17px;height:17px;margin-top:2px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/eye-off.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-size:14px;line-height:1.55;color:#757575">계좌번호와 금융기관 이름은 보이지 않아요. 휴면 계좌 같은 자세한 내용은 본인만 볼 수 있어요.</span>
+          </div>
+          <div style="margin-top:auto;text-align:center;font-family:var(--font-body);font-size:13px;color:#8E8E8E;padding-bottom:8px">금융위원회 허가 앱 · 금융감독원 등록</div>
+        </div>
+      </div>
+      <div style="margin:10px 4px 0 4px;font-family:var(--font-body);font-size:13px;line-height:1.5;color:#8E8E8E">카카오톡·문자로 전달되는 48시간 유효 링크 · 총합과 유형 소계만 표시</div>
+    </div>
+
+  </div>
+</section>
+
+<section style="max-width:1760px;margin:0 auto;padding:0 48px 64px 48px">
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-0.015em;color:#333333;margin:0 0 6px 0">3 · 놓친 자산 찾기 — Variable Reward</h2>
+  <p style="font-family:var(--font-body);font-size:15px;color:#757575;margin:0 0 24px 0">잠금화면엔 금액·기관명 미노출 → 탭 1번 + 간편 인증 1회 → 5초 안에 상세 도달 · 사기 주의 고지 상시 고정</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">C1 · 잠금화면 푸시</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-ALT-F-02</span>
+      </div>
+      <div data-screen-label="C1 잠금화면 푸시" style="width:375px;height:812px;background:linear-gradient(168deg,#3D437E 0%,#2A2E55 55%,#1D2040 100%);border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="width:16px;height:16px;background:rgba(255,255,255,0.85);mask:url(https://unpkg.com/lucide-static/icons/lock.svg) center/contain no-repeat"></span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:rgba(255,255,255,0.85);mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:rgba(255,255,255,0.85);mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:rgba(255,255,255,0.85);mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;text-align:center;margin-top:64px">
+          <div style="font-family:var(--font-num);font-weight:700;font-size:76px;letter-spacing:-0.02em;color:#FFFFFF;line-height:1">10:24</div>
+          <div style="margin-top:10px;font-family:var(--font-body);font-weight:500;font-size:18px;color:rgba(255,255,255,0.75)">6월 11일 목요일</div>
+        </div>
+        <div style="margin:48px 16px 0 16px;background:rgba(255,255,255,0.92);border-radius:20px;padding:16px;backdrop-filter:blur(20px)">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="flex:0 0 auto;width:42px;height:42px;border-radius:13px;background:#5F6BEA;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:16px;color:#FFFFFF">모아보미</span>
+            <div style="flex:1">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <span style="font-family:var(--font-body);font-weight:700;font-size:15px;color:#333333">모아보미</span>
+                <span style="font-family:var(--font-body);font-size:13px;color:#8E8E8E">지금</span>
+              </div>
+              <div style="margin-top:4px;font-family:var(--font-body);font-weight:500;font-size:16px;line-height:1.5;color:#333333">놓친 자산이 있을 수 있어요. 눌러서 확인해 보세요</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:14px;padding-bottom:28px">
+          <span style="font-family:var(--font-body);font-size:15px;color:rgba(255,255,255,0.65)">위로 쓸어 올려서 잠금 해제</span>
+          <span style="width:120px;height:5px;border-radius:3px;background:rgba(255,255,255,0.85)"></span>
+        </div>
+      </div>
+      <div style="margin:10px 4px 0 4px;font-family:var(--font-body);font-size:13px;line-height:1.5;color:#8E8E8E">금액·기관명 미포함 고정 문구 · 09~18시만 발송 · 월 4회 상한 · 보이스피싱 문자와 혼동 차단</div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">C2 · 발견 자산 상세</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-ALT-F-04</span>
+      </div>
+      <div data-screen-label="C2 발견 자산 상세" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">발견한 내 돈</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:14px 24px 0 24px;overflow:hidden">
+          <div style="text-align:center">
+            <span style="display:inline-block;background:#FFF4E9;border-radius:999px;padding:7px 14px;font-family:var(--font-body);font-weight:700;font-size:13px;color:#9A7400">휴면 계좌 · 예상 금액</span>
+            <div style="margin-top:10px;font-family:var(--font-num);font-weight:800;font-size:44px;letter-spacing:-0.02em;color:#333333">87만원</div>
+            <div style="margin-top:6px;font-family:var(--font-body);font-size:14px;color:#8E8E8E">6월 1일 기준 · 실제 지급액과 다를 수 있어요</div>
+          </div>
+          <div style="margin-top:16px;background:#F5F5F5;border-radius:16px;padding:4px 16px">
+            <div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #EEEEEE">
+              <span style="font-family:var(--font-body);font-size:15px;color:#666666">기관</span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:15px;color:#333333">KB국민은행 · 계좌 끝 1234</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:11px 0">
+              <span style="font-family:var(--font-body);font-size:15px;color:#666666">마지막 거래</span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:15px;color:#333333">2023년 5월 · 휴면 전환됨</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">찾는 방법</div>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:12px;border:1px solid #E1E1E1;border-radius:14px;padding:13px 14px">
+              <span style="flex:0 0 auto;width:28px;height:28px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-weight:700;font-size:14px;color:#5F6BEA">1</span>
+              <span style="flex:1;font-family:var(--font-body);font-size:15px;line-height:1.5;color:#333333">국민은행 앱이나 가까운 지점에서 확인해요</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;border:1px solid #E1E1E1;border-radius:14px;padding:13px 14px">
+              <span style="flex:0 0 auto;width:28px;height:28px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-weight:700;font-size:14px;color:#5F6BEA">2</span>
+              <span style="flex:1;font-family:var(--font-body);font-size:15px;line-height:1.5;color:#333333">신분증으로 본인 확인을 해요</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;border:1px solid #E1E1E1;border-radius:14px;padding:13px 14px">
+              <span style="flex:0 0 auto;width:28px;height:28px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-weight:700;font-size:14px;color:#5F6BEA">3</span>
+              <span style="flex:1;font-family:var(--font-body);font-size:15px;line-height:1.5;color:#333333">지급 신청을 하면 돼요 <span style="color:#757575">· 대표번호 1588-9999</span></span>
+            </div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:9px;align-items:flex-start;background:#EFF0FF;border-radius:12px;padding:11px 14px">
+            <span style="flex:0 0 auto;width:16px;height:16px;margin-top:2px;background:#2835BA;mask:url(https://unpkg.com/lucide-static/icons/info.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-size:13.5px;line-height:1.5;color:#2835BA">휴면예금은 서민금융진흥원 &lsquo;휴면예금 찾아줌&rsquo;에서도 찾을 수 있어요</span>
+          </div>
+          <div style="margin-top:auto;padding-top:12px;display:flex;gap:10px;padding-bottom:14px">
+            <span style="flex:1.4;height:56px;border-radius:28px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:700;font-size:17px">확인했어요</span>
+            <span style="flex:1;height:56px;border-radius:28px;border:1px solid #E1E1E1;background:#FFFFFF;color:#666666;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:500;font-size:16px">관심 없음</span>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;background:#FFF2F2;padding:14px 24px;display:flex;gap:9px;align-items:flex-start">
+          <span style="flex:0 0 auto;width:18px;height:18px;margin-top:1px;background:#FE324E;mask:url(https://unpkg.com/lucide-static/icons/triangle-alert.svg) center/contain no-repeat"></span>
+          <span style="font-family:var(--font-body);font-weight:500;font-size:14px;line-height:1.5;color:#C41A33">이 앱과 금융기관은 절대 전화로 비밀번호나 이체를 요구하지 않습니다</span>
+        </div>
+      </div>
+      <div style="margin:10px 4px 0 4px;font-family:var(--font-body);font-size:13px;line-height:1.5;color:#8E8E8E">앱 내 직접 청구는 미지원 — 기관 절차 안내만 · 전화 발신은 사용자 탭으로만</div>
+    </div>
+
+  </div>
+</section>
+
+<section style="max-width:1760px;margin:0 auto;padding:0 48px 64px 48px">
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-0.015em;color:#333333;margin:0 0 6px 0">4 · 훅 트리거 — 가족형 / 1인 가구형 이중 트랙</h2>
+  <p style="font-family:var(--font-body);font-size:15px;color:#757575;margin:0 0 24px 0">알림 탭 1번 → 1줄 답변 즉시 도달 · 가족 미등록자에겐 가족 전제 문구 전면 차단(정서 안전) · 자산 감소 시 중립 문구</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">D1 · 용돈 준비 보기 (가족형)</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-HOK-F-02</span>
+      </div>
+      <div data-screen-label="D1 용돈 준비 보기" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">용돈 준비 보기</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:16px 24px 0 24px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:14px">
+            <span style="flex:0 0 auto;width:56px;height:56px;border-radius:18px;background:#FFE1E5;display:flex;align-items:center;justify-content:center"><span style="width:28px;height:28px;background:#F0609F;mask:url(https://unpkg.com/lucide-static/icons/gift.svg) center/contain no-repeat"></span></span>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:21px;line-height:1.4;letter-spacing:-0.015em;color:#333333">손주 민준이 첫 생일이<br>2달 뒤예요</div>
+          </div>
+          <div style="margin-top:18px;background:#EFF0FF;border-radius:20px;padding:22px;text-align:center">
+            <div style="font-family:var(--font-body);font-weight:500;font-size:15px;color:#5F6BEA">지금 자산으로</div>
+            <div style="margin-top:8px;font-family:var(--font-display);font-weight:800;font-size:26px;line-height:1.35;letter-spacing:-0.018em;color:#2835BA">5만원 용돈 3회 가능해요</div>
+          </div>
+          <div style="margin-top:14px;background:#F5F5F5;border-radius:16px;padding:4px 16px">
+            <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #EEEEEE">
+              <span style="font-family:var(--font-body);font-size:15px;color:#666666">자유롭게 쓸 수 있는 돈</span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:16px;color:#333333">18만원</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0">
+              <span style="font-family:var(--font-body);font-size:15px;color:#666666">생일 용돈 목표</span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:16px;color:#333333">5만원 × 3회</span>
+            </div>
+          </div>
+          <div style="margin-top:14px;border:1px solid #F2DFA8;background:#FFFBEE;border-radius:16px;padding:14px 16px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:16px;height:16px;background:#C99700;mask:url(https://unpkg.com/lucide-static/icons/coins.svg) center/contain no-repeat"></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:12px;color:#9A7400">오늘의 발견</span>
+            </div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:10px">
+              <span style="flex:1;font-family:var(--font-body);font-weight:700;font-size:16px;line-height:1.45;color:#333333">잊고 있던 계좌의 87만원으로 용돈을 준비해 보세요</span>
+              <span style="flex:0 0 auto;width:22px;height:22px;background:#9A7400;mask:url(https://unpkg.com/lucide-static/icons/chevron-right.svg) center/contain no-repeat"></span>
+            </div>
+          </div>
+          <div style="margin-top:auto;padding-bottom:24px">
+            <div style="height:60px;border-radius:30px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:19px">생일 용돈 목표 등록하기</div>
+            <div style="margin-top:12px;text-align:center;font-family:var(--font-body);font-size:14px;color:#8E8E8E">등록하면 다음 달에 다시 알려드려요</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">D2 · 의료비 예비비 점검 (1인 가구형)</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-HOK-F-04 · F-05</span>
+      </div>
+      <div data-screen-label="D2 예비비 점검" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">의료비 예비비 점검</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:16px 24px 0 24px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:14px">
+            <span style="flex:0 0 auto;width:56px;height:56px;border-radius:18px;background:#DFF4FF;display:flex;align-items:center;justify-content:center"><span style="width:28px;height:28px;background:#0070F0;mask:url(https://unpkg.com/lucide-static/icons/heart-pulse.svg) center/contain no-repeat"></span></span>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:21px;line-height:1.4;letter-spacing:-0.015em;color:#333333">이번 달 예비비<br>점검일이에요</div>
+          </div>
+          <div style="margin-top:18px;background:#F5F5F5;border-radius:20px;padding:22px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between">
+              <span style="font-family:var(--font-display);font-weight:800;font-size:24px;letter-spacing:-0.018em;color:#333333">목표의 <span style="color:#0A9871">86%</span> 준비됐어요</span>
+            </div>
+            <div style="margin-top:14px;height:16px;border-radius:8px;background:#E1E1E1;overflow:hidden">
+              <span style="display:block;width:86%;height:16px;border-radius:8px;background:#1EBF80"></span>
+            </div>
+            <div style="margin-top:10px;display:flex;justify-content:space-between">
+              <span style="font-family:var(--font-num);font-weight:700;font-size:16px;color:#333333">430만원</span>
+              <span style="font-family:var(--font-body);font-size:15px;color:#8E8E8E">목표 500만원</span>
+            </div>
+            <div style="margin-top:14px;display:flex;align-items:center;gap:8px;border-top:1px solid #E1E1E1;padding-top:14px">
+              <span style="width:20px;height:20px;background:#0A9871;mask:url(https://unpkg.com/lucide-static/icons/trending-up.svg) center/contain no-repeat"></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#0A9871">지난달보다 12만원 늘었어요</span>
+            </div>
+          </div>
+          <div style="margin-top:14px;background:#ECEAF5;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px">
+            <span style="flex:0 0 auto;width:44px;height:44px;border-radius:22px;background:#FFFFFF;display:flex;align-items:center;justify-content:center"><span style="width:24px;height:24px;background:#8B5CF6;mask:url(https://unpkg.com/lucide-static/icons/award.svg) center/contain no-repeat"></span></span>
+            <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:15px;line-height:1.5;color:#4B3A78">3개월 연속 직접 확인하셨어요 — 자산을 스스로 관리하고 계시네요</span>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:12px;border:1px solid #E1E1E1;border-radius:16px;padding:14px 16px">
+            <span style="flex:0 0 auto;width:40px;height:40px;border-radius:13px;background:#DFF4FF;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#4D9BFF;mask:url(https://unpkg.com/lucide-static/icons/tag.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:700;font-size:15px;color:#333333">국민은행 정기예금</div>
+              <div style="font-family:var(--font-body);font-size:13px;color:#8E8E8E">내가 붙인 라벨</div>
+            </div>
+            <span style="background:#DFF4FF;border-radius:999px;padding:6px 12px;font-family:var(--font-body);font-weight:700;font-size:13px;color:#0070F0">병원비 전용</span>
+          </div>
+          <div style="margin-top:auto;padding-bottom:24px;display:flex;gap:10px">
+            <span style="flex:1.3;height:58px;border-radius:29px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:700;font-size:17px">목표 올리기</span>
+            <span style="flex:1;height:58px;border-radius:29px;border:1px solid #E1E1E1;background:#FFFFFF;color:#666666;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:500;font-size:16px">다음에 볼게요</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin:10px 4px 0 4px;font-family:var(--font-body);font-size:13px;line-height:1.5;color:#8E8E8E">가족 전제 문구 없음 · 자산 감소 시에도 질책·불안 표현 금지(중립 문구)</div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">D3 · 가족·목표 등록</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-HOK-F-07</span>
+      </div>
+      <div data-screen-label="D3 가족 목표 등록" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">가족·목표 등록</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:14px 24px 0 24px;overflow:hidden">
+          <div style="font-family:var(--font-body);font-weight:700;font-size:15px;color:#666666">가족 정보</div>
+          <div style="margin-top:10px;display:flex;gap:10px">
+            <div style="flex:1;border:1px solid #E1E1E1;border-radius:14px;padding:12px 14px">
+              <div style="font-family:var(--font-body);font-size:13px;color:#8E8E8E">이름</div>
+              <div style="margin-top:3px;font-family:var(--font-body);font-weight:700;font-size:17px;color:#333333">민준</div>
+            </div>
+            <div style="flex:1;border:1px solid #E1E1E1;border-radius:14px;padding:12px 14px">
+              <div style="font-family:var(--font-body);font-size:13px;color:#8E8E8E">생일</div>
+              <div style="margin-top:3px;font-family:var(--font-body);font-weight:700;font-size:17px;color:#333333">8월 12일</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <span style="background:#5F6BEA;border-radius:999px;padding:10px 18px;font-family:var(--font-body);font-weight:700;font-size:15px;color:#FFFFFF">손주</span>
+            <span style="border:1px solid #E1E1E1;border-radius:999px;padding:10px 18px;font-family:var(--font-body);font-size:15px;color:#666666">자녀</span>
+            <span style="border:1px solid #E1E1E1;border-radius:999px;padding:10px 18px;font-family:var(--font-body);font-size:15px;color:#666666">배우자</span>
+          </div>
+          <div style="margin-top:20px;font-family:var(--font-body);font-weight:700;font-size:15px;color:#666666">목표</div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <span style="background:#5F6BEA;border-radius:999px;padding:10px 18px;font-family:var(--font-body);font-weight:700;font-size:15px;color:#FFFFFF">생일 용돈</span>
+            <span style="border:1px solid #E1E1E1;border-radius:999px;padding:10px 18px;font-family:var(--font-body);font-size:15px;color:#666666">명절 용돈</span>
+            <span style="border:1px solid #E1E1E1;border-radius:999px;padding:10px 18px;font-family:var(--font-body);font-size:15px;color:#666666">의료비 예비비</span>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:10px">
+            <div style="flex:1;border:1px solid #E1E1E1;border-radius:14px;padding:12px 14px">
+              <div style="font-family:var(--font-body);font-size:13px;color:#8E8E8E">금액</div>
+              <div style="margin-top:3px;font-family:var(--font-num);font-weight:700;font-size:17px;color:#333333">50,000원</div>
+            </div>
+            <div style="flex:1;border:1px solid #E1E1E1;border-radius:14px;padding:12px 14px">
+              <div style="font-family:var(--font-body);font-size:13px;color:#8E8E8E">기한</div>
+              <div style="margin-top:3px;font-family:var(--font-body);font-weight:700;font-size:17px;color:#333333">8월 12일까지</div>
+            </div>
+          </div>
+          <div style="margin-top:20px;font-family:var(--font-body);font-weight:700;font-size:15px;color:#666666">통장 라벨 붙이기 <span style="font-weight:400;color:#8E8E8E">(선택)</span></div>
+          <div style="margin-top:10px;border:1px solid #E1E1E1;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+            <span style="width:18px;height:18px;background:#4D9BFF;mask:url(https://unpkg.com/lucide-static/icons/tag.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">손주 용돈 통장</span>
+          </div>
+          <div style="margin-top:16px;background:#F5F5F5;border-radius:14px;padding:14px;display:flex;gap:10px;align-items:flex-start">
+            <span style="flex:0 0 auto;width:24px;height:24px;border-radius:8px;background:#5F6BEA;display:flex;align-items:center;justify-content:center;margin-top:1px"><span style="width:14px;height:14px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:500;font-size:15px;line-height:1.5;color:#333333">가족 정보 저장에 동의해요</div>
+              <div style="margin-top:2px;font-family:var(--font-body);font-size:13px;line-height:1.5;color:#757575">꼭 필요한 것만 모으고, 지우면 바로 삭제돼요</div>
+            </div>
+            <span style="display:inline-flex;align-items:center;gap:5px;border:1px solid #E1E1E1;border-radius:999px;padding:6px 10px"><span style="width:13px;height:13px;background:#666666;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span><span style="font-family:var(--font-body);font-size:12px;color:#666666">설명 듣기</span></span>
+          </div>
+          <div style="margin-top:auto;padding-bottom:24px">
+            <div style="height:60px;border-radius:30px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:19px">등록하기</div>
+            <div style="margin-top:12px;text-align:center;font-family:var(--font-body);font-size:14px;color:#8E8E8E">등록하면 다음 달 1일에 점검 알림을 드려요</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">D4 · 연금 입금 — 이번 달 요약</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-HOK-F-03</span>
+      </div>
+      <div data-screen-label="D4 연금 입금 요약" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">이번 달 연금</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:18px 24px 0 24px;overflow:hidden">
+          <div style="background:#DCF2E8;border-radius:20px;padding:24px;text-align:center">
+            <span style="display:inline-flex;align-items:center;gap:7px;background:#FFFFFF;border-radius:999px;padding:7px 14px">
+              <span style="width:16px;height:16px;background:#0A9871;mask:url(https://unpkg.com/lucide-static/icons/piggy-bank.svg) center/contain no-repeat"></span>
+              <span style="font-family:var(--font-body);font-weight:700;font-size:13px;color:#0A9871">오늘 입금</span>
+            </span>
+            <div style="margin-top:12px;font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-0.015em;color:#333333">국민연금이 입금됐어요</div>
+            <div style="margin-top:8px;font-family:var(--font-num);font-weight:800;font-size:40px;letter-spacing:-0.02em;color:#0A9871">+62만원</div>
+          </div>
+          <div style="margin-top:16px;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">이번 달 잔고 요약</div>
+          <div style="margin-top:10px;background:#F5F5F5;border-radius:16px;padding:4px 16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #EEEEEE">
+              <span style="font-family:var(--font-body);font-size:16px;color:#666666">들어온 돈</span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:18px;color:#0A9871">+62만원</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #EEEEEE">
+              <span style="font-family:var(--font-body);font-size:16px;color:#666666">쓴 돈</span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:18px;color:#FE324E">−41만원</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0">
+              <span style="font-family:var(--font-body);font-weight:700;font-size:16px;color:#333333">이번 달 남은 돈</span>
+              <span style="font-family:var(--font-num);font-weight:800;font-size:20px;color:#333333">21만원</span>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:9px;align-items:flex-start">
+            <span style="flex:0 0 auto;width:17px;height:17px;margin-top:2px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/lock.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-size:14px;line-height:1.55;color:#757575">잠금화면 알림에는 금액이 보이지 않았어요. 금액 표시는 설정에서 바꿀 수 있어요.</span>
+          </div>
+          <div style="margin-top:auto;padding-bottom:24px">
+            <div style="height:60px;border-radius:30px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:19px">자세한 내역 보기</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section style="max-width:1760px;margin:0 auto;padding:0 48px 96px 48px">
+  <h2 style="font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-0.015em;color:#333333;margin:0 0 6px 0">5 · 금융사기 대응 · 설정</h2>
+  <p style="font-family:var(--font-body);font-size:15px;color:#757575;margin:0 0 24px 0">의심 연락 진위 확인 · 원터치 112/1332 연결(발신은 사용자 탭으로만) · 음성·대형 글씨·알림 유형별 제어</p>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">E1 · 의심 연락 확인</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-SEC-F-01</span>
+      </div>
+      <div data-screen-label="E1 의심 연락 확인" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">의심 연락 확인</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:16px 24px 0 24px;overflow:hidden">
+          <div style="font-family:var(--font-body);font-size:16px;line-height:1.55;color:#4B4B4B">모르는 번호의 금융 문자나 전화,<br>여기서 먼저 확인해 보세요</div>
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <div style="flex:1;border:2px solid #5F6BEA;border-radius:16px;padding:15px 16px;display:flex;align-items:center;gap:10px">
+              <span style="width:20px;height:20px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/phone.svg) center/contain no-repeat"></span>
+              <span style="font-family:var(--font-num);font-weight:700;font-size:19px;color:#333333">02-1234-5678</span>
+            </div>
+            <span style="flex:0 0 auto;width:88px;border-radius:16px;background:#5F6BEA;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:700;font-size:16px">확인</span>
+          </div>
+          <div style="margin-top:18px;background:#FFF2F2;border:1px solid #FFD2D9;border-radius:20px;padding:22px;text-align:center">
+            <span style="display:inline-flex;width:64px;height:64px;border-radius:32px;background:#FE324E;align-items:center;justify-content:center"><span style="width:34px;height:34px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/triangle-alert.svg) center/contain no-repeat"></span></span>
+            <div style="margin-top:12px;font-family:var(--font-display);font-weight:800;font-size:24px;letter-spacing:-0.018em;color:#C41A33">신고된 번호예요</div>
+            <div style="margin-top:8px;font-family:var(--font-body);font-weight:500;font-size:16px;line-height:1.55;color:#4B4B4B">절대 돈을 보내거나<br>앱을 설치하지 마세요</div>
+          </div>
+          <div style="margin-top:14px;background:#F5F5F5;border-radius:16px;padding:16px">
+            <div style="font-family:var(--font-body);font-weight:700;font-size:14px;color:#666666">꼭 기억하세요</div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:8px;align-items:flex-start">
+                <span style="flex:0 0 auto;width:16px;height:16px;margin-top:2px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span>
+                <span style="font-family:var(--font-body);font-size:14.5px;line-height:1.5;color:#4B4B4B">금융기관은 전화로 이체를 요구하지 않아요</span>
+              </div>
+              <div style="display:flex;gap:8px;align-items:flex-start">
+                <span style="flex:0 0 auto;width:16px;height:16px;margin-top:2px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/check.svg) center/contain no-repeat"></span>
+                <span style="font-family:var(--font-body);font-size:14.5px;line-height:1.5;color:#4B4B4B">비밀번호·인증번호는 누구에게도 알려주지 마세요</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:auto;padding-bottom:24px;display:flex;gap:10px">
+            <span style="flex:1;height:58px;border-radius:29px;background:#FE324E;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:700;font-size:17px">신고 접수하기</span>
+            <span style="flex:1;height:58px;border-radius:29px;border:1px solid #E1E1E1;background:#FFFFFF;color:#333333;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:700;font-size:17px">1332 상담</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin:10px 4px 0 4px;font-family:var(--font-body);font-size:13px;line-height:1.5;color:#8E8E8E">미일치 시엔 &ldquo;확인되지 않았어요&rdquo; 중립 안내 — &ldquo;안전한 번호&rdquo; 단정 금지</div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">E2 · 원터치 신고·상담 연결</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-SEC-F-02</span>
+      </div>
+      <div data-screen-label="E2 신고 상담 연결" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 16px 0 12px">
+          <span style="width:28px;height:28px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/chevron-left.svg) center/contain no-repeat"></span>
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:18px;color:#333333">신고·상담 연결</span>
+          <span style="width:44px;height:44px;border-radius:14px;background:#EFF0FF;display:flex;align-items:center;justify-content:center"><span style="width:22px;height:22px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:20px 24px 0 24px;overflow:hidden">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:22px;line-height:1.45;letter-spacing:-0.015em;color:#333333">급한 신고는 112,<br>궁금한 상담은 1332예요</div>
+          <div style="margin-top:22px;background:#FFF2F2;border:1px solid #FFD2D9;border-radius:20px;padding:24px;display:flex;align-items:center;gap:16px">
+            <span style="flex:0 0 auto;width:64px;height:64px;border-radius:20px;background:#FE324E;display:flex;align-items:center;justify-content:center"><span style="width:32px;height:32px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/phone.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-num);font-weight:800;font-size:32px;letter-spacing:-0.02em;color:#C41A33">112</div>
+              <div style="margin-top:2px;font-family:var(--font-body);font-weight:500;font-size:16px;color:#4B4B4B">경찰 긴급 신고</div>
+              <div style="font-family:var(--font-body);font-size:14px;color:#757575">사기 피해가 의심될 때</div>
+            </div>
+            <span style="flex:0 0 auto;width:26px;height:26px;background:#C41A33;mask:url(https://unpkg.com/lucide-static/icons/chevron-right.svg) center/contain no-repeat"></span>
+          </div>
+          <div style="margin-top:14px;background:#DFF4FF;border:1px solid #BCE4FF;border-radius:20px;padding:24px;display:flex;align-items:center;gap:16px">
+            <span style="flex:0 0 auto;width:64px;height:64px;border-radius:20px;background:#0070F0;display:flex;align-items:center;justify-content:center"><span style="width:32px;height:32px;background:#FFFFFF;mask:url(https://unpkg.com/lucide-static/icons/headset.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-num);font-weight:800;font-size:32px;letter-spacing:-0.02em;color:#0058BD">1332</div>
+              <div style="margin-top:2px;font-family:var(--font-body);font-weight:500;font-size:16px;color:#4B4B4B">금융감독원 상담</div>
+              <div style="font-family:var(--font-body);font-size:14px;color:#757575">미리 물어보고 싶을 때</div>
+            </div>
+            <span style="flex:0 0 auto;width:26px;height:26px;background:#0058BD;mask:url(https://unpkg.com/lucide-static/icons/chevron-right.svg) center/contain no-repeat"></span>
+          </div>
+          <div style="margin-top:auto;padding-bottom:24px;display:flex;gap:9px;align-items:flex-start;background:#F5F5F5;border-radius:14px;padding:14px 16px;margin-bottom:24px">
+            <span style="flex:0 0 auto;width:17px;height:17px;margin-top:2px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/info.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-size:14px;line-height:1.55;color:#666666">누르면 전화 화면에 번호만 채워드려요. 실제 발신은 통화 버튼을 직접 누르셔야 해요.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:375px;flex:0 0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 10px 4px">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:#333333">E3 · 설정 — 보기 도움 · 알림</span>
+        <span style="font-family:var(--font-body);font-size:12px;color:#8E8E8E">FRD-MDA-F-02 · ALT-F-05 · ACC-F-03</span>
+      </div>
+      <div data-screen-label="E3 설정" style="width:375px;height:812px;background:#FFFFFF;border-radius:28px;border:1px solid #E1E1E1;box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;display:flex;flex-direction:column">
+        <div style="height:44px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px">
+          <span style="font-family:var(--font-num);font-weight:600;font-size:15px;color:#333333">9:41</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/signal.svg) center/contain no-repeat"></span>
+            <span style="width:16px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/wifi.svg) center/contain no-repeat"></span>
+            <span style="width:20px;height:16px;background:#333333;mask:url(https://unpkg.com/lucide-static/icons/battery-full.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 24px">
+          <span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:20px;color:#333333">설정</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;padding:8px 24px 0 24px;overflow:hidden">
+          <div style="font-family:var(--font-body);font-weight:700;font-size:14px;color:#8E8E8E">보기 도움</div>
+          <div style="margin-top:8px;background:#F5F5F5;border-radius:16px;padding:2px 16px">
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:#DFF4FF;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#4D9BFF;mask:url(https://unpkg.com/lucide-static/icons/volume-2.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">음성 안내</span>
+              <span style="flex:0 0 auto;width:52px;height:32px;border-radius:16px;background:#5F6BEA;position:relative"><span style="position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:13px;background:#FFFFFF"></span></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+              <span style="flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:#FFF4E9;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#FF900D;mask:url(https://unpkg.com/lucide-static/icons/zoom-in.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">대형 글씨 기본값</span>
+              <span style="flex:0 0 auto;width:52px;height:32px;border-radius:16px;background:#5F6BEA;position:relative"><span style="position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:13px;background:#FFFFFF"></span></span>
+            </div>
+          </div>
+          <div style="margin-top:18px;font-family:var(--font-body);font-weight:700;font-size:14px;color:#8E8E8E">알림</div>
+          <div style="margin-top:8px;background:#F5F5F5;border-radius:16px;padding:2px 16px">
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:#FFF4E9;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#FF900D;mask:url(https://unpkg.com/lucide-static/icons/coins.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">놓친 자산 알림</span>
+              <span style="flex:0 0 auto;width:52px;height:32px;border-radius:16px;background:#5F6BEA;position:relative"><span style="position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:13px;background:#FFFFFF"></span></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:#FFE1E5;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#F189C5;mask:url(https://unpkg.com/lucide-static/icons/gift.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">가족 이벤트 알림</span>
+              <span style="flex:0 0 auto;width:52px;height:32px;border-radius:16px;background:#5F6BEA;position:relative"><span style="position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:13px;background:#FFFFFF"></span></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #EEEEEE">
+              <span style="flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:#DCF2E8;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#1EBF80;mask:url(https://unpkg.com/lucide-static/icons/piggy-bank.svg) center/contain no-repeat"></span></span>
+              <span style="flex:1;font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">연금 입금 알림</span>
+              <span style="flex:0 0 auto;width:52px;height:32px;border-radius:16px;background:#5F6BEA;position:relative"><span style="position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:13px;background:#FFFFFF"></span></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 0">
+              <span style="flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:#EEEEEE;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/lock.svg) center/contain no-repeat"></span></span>
+              <div style="flex:1">
+                <div style="font-family:var(--font-body);font-weight:500;font-size:16px;color:#333333">잠금화면에 금액 보이기</div>
+                <div style="font-family:var(--font-body);font-size:13px;color:#8E8E8E">기본으로 꺼져 있어요</div>
+              </div>
+              <span style="flex:0 0 auto;width:52px;height:32px;border-radius:16px;background:#CACACA;position:relative"><span style="position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:13px;background:#FFFFFF"></span></span>
+            </div>
+          </div>
+          <div style="margin-top:18px;background:#FFFFFF;border:1px solid #FFD2D9;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+            <span style="flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:#FFF2F2;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#FE324E;mask:url(https://unpkg.com/lucide-static/icons/trash-2.svg) center/contain no-repeat"></span></span>
+            <div style="flex:1">
+              <div style="font-family:var(--font-body);font-weight:500;font-size:16px;color:#C41A33">연결 끊고 내 정보 지우기</div>
+              <div style="font-family:var(--font-body);font-size:13px;color:#8E8E8E">24시간 안에 모두 삭제돼요</div>
+            </div>
+            <span style="flex:0 0 auto;width:22px;height:22px;background:#CACACA;mask:url(https://unpkg.com/lucide-static/icons/chevron-right.svg) center/contain no-repeat"></span>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;border-top:1px solid #EEEEEE;display:flex;padding:10px 8px 18px 8px">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/home.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">홈</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/bell.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">알림함</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#8E8E8E;mask:url(https://unpkg.com/lucide-static/icons/shield.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:500;font-size:13px;color:#8E8E8E">안전</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:26px;height:26px;background:#5F6BEA;mask:url(https://unpkg.com/lucide-static/icons/settings.svg) center/contain no-repeat"></span>
+            <span style="font-family:var(--font-body);font-weight:700;font-size:13px;color:#5F6BEA">설정</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section></x-dc>
+</body>
+</html>
