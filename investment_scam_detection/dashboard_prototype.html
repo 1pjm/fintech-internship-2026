@@ -793,13 +793,32 @@
     var rows = TS_BY_STOCK[name];
     if (rows.length < 2) return null;
     var stock = [100], index = [100];
+    var dates = [rows[0].date];
+    var mentionIndex = rows[0].isMention ? 0 : -1;
     for (var i = 1; i < rows.length; i++) {
       var pStock = rows[i].priceChangePct == null ? 0 : rows[i].priceChangePct;
       var pIndex = rows[i].indexChangePct == null ? 0 : rows[i].indexChangePct;
       stock.push(stock[i - 1] * (1 + pStock / 100));
       index.push(index[i - 1] * (1 + pIndex / 100));
+      dates.push(rows[i].date);
+      if (rows[i].isMention && mentionIndex === -1) mentionIndex = i;
     }
-    return { stock: stock, index: index, real: true };
+    return { stock: stock, index: index, dates: dates, mentionIndex: mentionIndex, real: true };
+  }
+
+  // 실제 시계열이 없을 때(DEMO 또는 시계열 CSV 미업로드)도 날짜 감각을 주기 위한 참고용 날짜축입니다.
+  // 실제 거래일이 아니라 오늘부터 역산한 달력일이며, 항상 "추정" 문구와 함께 표시됩니다.
+  function illustrativeDates(points) {
+    var out = [];
+    var today = new Date();
+    for (var i = 0; i < points; i++) {
+      var d = new Date(today);
+      d.setDate(d.getDate() - (points - 1 - i));
+      var mm = String(d.getMonth() + 1).padStart(2, "0");
+      var dd = String(d.getDate()).padStart(2, "0");
+      out.push(d.getFullYear() + "-" + mm + "-" + dd);
+    }
+    return out;
   }
 
   function renderChart(s) {
@@ -821,11 +840,20 @@
     var realSeries = buildRealSeriesFor(s.name);
     var points = realSeries ? realSeries.stock.length : 22;
     var data = realSeries || seededSeries(s.priceChange, indexFinal, points, s.seed);
-    provenance.textContent = realSeries
-      ? "실제 일별 시계열 (" + points + "거래일, investment_guidance_timeseries.csv 기준)"
-      : (DATA_MODE === "real"
-        ? "※ 일별 시계열 CSV가 없어 최종 수치(등락률·상대수익률) 기준 추정 추이입니다."
-        : "DEMO 추정 추이 — 최종 수치 기준으로 만든 가상의 일별 흐름입니다.");
+    var dates = realSeries ? realSeries.dates : illustrativeDates(points);
+    var mentionIndex = (realSeries && realSeries.mentionIndex >= 0) ? realSeries.mentionIndex : -1;
+
+    var rangeLabel = (dates && dates[0] && dates[points - 1]) ? (dates[0] + " ~ " + dates[points - 1]) : "";
+    var mentionLabel = (mentionIndex >= 0 && dates[mentionIndex]) ? (" · 언급 시점 " + dates[mentionIndex]) : "";
+    if (realSeries) {
+      provenance.textContent = "실제 일별 시계열 (" + points + "거래일" + (rangeLabel ? ", " + rangeLabel : "") + mentionLabel + ")";
+    } else if (DATA_MODE === "real") {
+      provenance.textContent = "※ 일별 시계열 CSV가 없어 최종 수치(등락률·상대수익률) 기준 추정 추이입니다" +
+        (rangeLabel ? " (추정 날짜 " + rangeLabel + ")" : "") + ".";
+    } else {
+      provenance.textContent = "DEMO 추정 추이" + (rangeLabel ? " (추정 날짜 " + rangeLabel + ")" : "") +
+        " — 최종 수치 기준으로 만든 가상의 일별 흐름입니다.";
+    }
 
     var W = 540, H = 200, padL = 34, padR = 12, padT = 10, padB = 22;
     var all = data.stock.concat(data.index);
@@ -917,6 +945,24 @@
       svg.appendChild(c);
     });
 
+    // 언급 시점 참조선 — 실제 시계열에 언급일이 정확히 표시된 경우에만 그립니다(크로스헤어와는 별개의 고정선)
+    if (mentionIndex >= 0) {
+      var mentionLine = document.createElementNS(svgNS, "line");
+      mentionLine.setAttribute("x1", xAt(mentionIndex)); mentionLine.setAttribute("x2", xAt(mentionIndex));
+      mentionLine.setAttribute("y1", padT); mentionLine.setAttribute("y2", H - padB);
+      mentionLine.setAttribute("stroke", "var(--critical)");
+      mentionLine.setAttribute("stroke-width", "1.5");
+      mentionLine.setAttribute("stroke-dasharray", "3,3");
+      svg.appendChild(mentionLine);
+      var mentionTag = document.createElementNS(svgNS, "text");
+      mentionTag.setAttribute("x", Math.min(xAt(mentionIndex) + 4, W - padR - 44));
+      mentionTag.setAttribute("y", padT + 9);
+      mentionTag.setAttribute("font-size", "9.5"); mentionTag.setAttribute("fill", "var(--critical)");
+      mentionTag.setAttribute("font-family", "var(--font-mono)"); mentionTag.setAttribute("font-weight", "700");
+      mentionTag.textContent = "언급 시점";
+      svg.appendChild(mentionTag);
+    }
+
     // crosshair group
     var cross = document.createElementNS(svgNS, "line");
     cross.setAttribute("y1", padT); cross.setAttribute("y2", H - padB);
@@ -959,7 +1005,13 @@
       cross.setAttribute("x1", xAt(idx)); cross.setAttribute("x2", xAt(idx)); cross.setAttribute("opacity", "1");
       crossStockDot.setAttribute("cx", xAt(idx)); crossStockDot.setAttribute("cy", yAt(data.stock[idx])); crossStockDot.setAttribute("opacity", "1");
       crossIndexDot.setAttribute("cx", xAt(idx)); crossIndexDot.setAttribute("cy", yAt(data.index[idx])); crossIndexDot.setAttribute("opacity", "1");
-      var dayLabel = idx === points - 1 ? "그래프 시작 기준 +" + idx + "거래일 (최근)" : "그래프 시작 기준 +" + idx + "거래일";
+      var dateStr = dates && dates[idx];
+      var dayLabel;
+      if (dateStr) {
+        dayLabel = dateStr + (idx === points - 1 ? " (최근)" : "") + (idx === mentionIndex ? " · 언급 시점" : "");
+      } else {
+        dayLabel = "그래프 시작 기준 +" + idx + "거래일" + (idx === points - 1 ? " (최근)" : "");
+      }
       tip.innerHTML =
         '<div class="date">' + dayLabel + '</div>' +
         '<div class="row"><span class="key" style="background:var(--accent)"></span>' + escapeHtml(s.name) + '<span class="val">' + data.stock[idx].toFixed(1) + '</span></div>' +
@@ -990,9 +1042,10 @@
       toggleBtn.textContent = "차트로 보기";
       var rows = "";
       for (var i = 0; i < points; i += 3) {
-        rows += "<tr><td>+" + i + "거래일</td><td>" + data.stock[i].toFixed(1) + "</td><td>" + data.index[i].toFixed(1) + "</td></tr>";
+        var rowLabel = (dates && dates[i] ? dates[i] : ("+" + i + "거래일")) + (i === mentionIndex ? " (언급)" : "");
+        rows += "<tr><td>" + escapeHtml(rowLabel) + "</td><td>" + data.stock[i].toFixed(1) + "</td><td>" + data.index[i].toFixed(1) + "</td></tr>";
       }
-      mtHost.innerHTML = '<table class="mini-table"><thead><tr><th>구간</th><th>' + escapeHtml(s.name) + '</th><th>코스닥지수</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      mtHost.innerHTML = '<table class="mini-table"><thead><tr><th>날짜/구간</th><th>' + escapeHtml(s.name) + '</th><th>코스닥지수</th></tr></thead><tbody>' + rows + '</tbody></table>';
       mtHost.style.display = "block";
     };
   }
@@ -1214,6 +1267,14 @@
     return s;
   }
 
+  // "2026-06-24" 또는 "2026-06-24 00:00:00" 어느 쪽이 와도 시간대 변환 없이 날짜 부분만 그대로 취합니다
+  // (JS Date 객체로 파싱하면 로컬 시간대에 따라 하루가 밀리는 문제가 생길 수 있어 문자열로만 다룹니다).
+  function parseDateOnly(v) {
+    if (!v) return null;
+    var m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? m[0] : null;
+  }
+
   function buildTimeseriesIndex(rows) {
     var byStock = {};
     rows.forEach(function (r) {
@@ -1222,6 +1283,8 @@
       if (!byStock[name]) byStock[name] = [];
       byStock[name].push({
         day: parseNum(r.day),
+        date: parseDateOnly(r.Date),
+        isMention: parseBool3(r.is_mention_date) === true,
         priceChangePct: parseNum(r.price_change_pct),
         indexChangePct: parseNum(r.index_change_pct)
       });
