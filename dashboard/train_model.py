@@ -1,6 +1,6 @@
 """
 실서비스용 모델을 학습해서 dashboard/model/ 에 저장한다.
-modeling/전세대출_대위변제예측_모델링_수정본.ipynb 에서 검증된 파이프라인 그대로 사용:
+modeling/전세사기예측_AUC 비교.ipynb 에서 검증된 파이프라인 그대로 사용:
 stratify 분할 -> 수치형 StandardScaler -> LGBM(scale_pos_weight).
 
 사용법:
@@ -16,14 +16,15 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-DATA_PATH = "../data/전세보증대위변제현황_피처완료_.xlsx"
+DATA_PATH = "../data/전세보증대위변제현황_깡통라벨.xlsx"
 MODEL_DIR = "model"
 
 
 def main():
     os.makedirs(MODEL_DIR, exist_ok=True)
 
-    df = pd.read_excel(DATA_PATH).drop(columns=["일련번호"])
+    # 깡통전세여부는 깡통지수(임대보증금액+선순위채권금액)/주택가액)와 중복인 파생 라벨이라 제외
+    df = pd.read_excel(DATA_PATH).drop(columns=["일련번호", "깡통전세여부"])
     dt = pd.to_datetime(df["보증완료월"])
     df["보증완료_연도"] = dt.dt.year
     df["보증완료_월"] = dt.dt.month

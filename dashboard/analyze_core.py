@@ -87,6 +87,7 @@ def analyze(address, house_type, contract_month, deposit, senior_debt, house_val
         "전세가율": (deposit / house_value) if house_value else 0.0,
         "주택유형위험도": HOUSE_TYPE_RISK.get(house_type, 0.0),
         **group_features,
+        "깡통지수": ((deposit + senior_debt) / house_value) if house_value else 0.0,
         "보증완료_연도": int(base_ym[:4]),
         "보증완료_월": int(base_ym[4:]),
     }
