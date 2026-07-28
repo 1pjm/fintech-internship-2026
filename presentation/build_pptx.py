@@ -172,7 +172,7 @@ def add_stat(slide, x, y, w, h, num, label, color=ACCENT_INK):
 def add_stat_row(slide, x, y, w, h, items):
     n = len(items)
     gap = Inches(0.15)
-    cw = (w - gap * (n - 1)) / n
+    cw = (w - gap * (n - 1)) // n
     for i, (num, label, color) in enumerate(items):
         add_stat(slide, x + i * (cw + gap), y, cw, h, num, label, color)
 
@@ -282,7 +282,7 @@ add_title(s, "깡통전세란?")
 add_lede(s, '전세보증금이 매매가를 웃도는 집. 최근 수년간 전셋값이 급등한 반면 거래 절벽으로 집값 상승세가 주춤하면서, '
              '깡통전세 피해를 우려하는 세입자가 늘고 있다 — 2021년부터 전세반환보증 가입이 급증하는 배경이다.')
 
-half_w = (CONTENT_W - Inches(0.2)) / 2
+half_w = (CONTENT_W - Inches(0.2)) // 2
 add_card(s, MARGIN, BODY_TOP, half_w, Inches(1.5), title="경매 시 보증금 손실", title_color=DANGER,
          body="집주인이 대출 이자를 못 내거나 보증금을 못 돌려줘 집이 경매로 넘어가면, 은행 대출금이 세입자보다 "
               "먼저 변제된다. 낙찰가가 보증금보다 낮으면 세입자는 전세금 일부 또는 전부를 잃는다.")
@@ -329,7 +329,7 @@ add_header(s, "CASE 03 · 데이터 수집", "03 / 16")
 add_title(s, "데이터는 어디서 가져왔나")
 add_lede(s, "세 플랫폼을 조사했지만 성격이 뚜렷하게 달랐다 — 실제로 확인해본 뒤 역할을 나눠 정리했다.")
 
-third_w = (CONTENT_W - Inches(0.4)) / 3
+third_w = (CONTENT_W - Inches(0.4)) // 3
 cols = [
     ("공공데이터포털", ACCENT_INK, "핵심 뼈대 데이터. 실거래가 API, HUG 보증사고 통계, 전세사기 피해 실태조사, "
                                   "악성임대인 현황, 등기부등본·건축물대장 연계 데이터."),
@@ -490,7 +490,7 @@ add_title(s, "이 매물은 왜 이런 위험도로 판단했는가", size=27)
 add_lede(s, "Local XAI — 서비스의 진짜 핵심. 학습 데이터의 실제 매물 한 건(경남 · 아파트 · 전세가율 37% · 깡통지수 "
              "0.41)을 SHAP Force Plot으로 분해하면, 위험을 높인 요인과 낮춘 요인이 함께 드러난다.")
 
-half_w = (CONTENT_W - Inches(0.2)) / 2
+half_w = (CONTENT_W - Inches(0.2)) // 2
 add_table(s, MARGIN, BODY_TOP, half_w, Inches(1.5),
            ["위험을 낮춘 요인", "값", "SHAP"],
            [["선순위채권금액", "428만원 (낮은 편)", "-1.118"],
@@ -559,7 +559,7 @@ add_title(s, "실제로 만든 화면 — 입력 하나, 결과 하나", size=27
 add_lede(s, "관리자용 별도 화면은 만들지 않았다. 실제 구현은 Gradio 화면 하나 — 왼쪽 입력 패널과 오른쪽 결과 패널로 "
              "구성된다.")
 
-half_w = (CONTENT_W - Inches(0.2)) / 2
+half_w = (CONTENT_W - Inches(0.2)) // 2
 add_card(s, MARGIN, BODY_TOP, half_w, Inches(3.3), title="왼쪽 · 입력 패널", title_color=ACCENT_INK,
          body='"주소 분석해서 채우기" 버튼 하나로 시도·주택구분·주택가액을 채우고, 보증금·선순위채권금액·계약연도/월만 '
               "더하면 준비 끝.")
@@ -627,7 +627,7 @@ limits = [
     ("임대인 축 부재", "다주택 보유, 악성임대인 명단 등 임대인 측 위험 신호가 미포함 — 실제 사기 사건의 핵심 축이라 "
                     "추가가 필요하다."),
 ]
-half_w = (CONTENT_W - Inches(0.2)) / 2
+half_w = (CONTENT_W - Inches(0.2)) // 2
 positions = [(MARGIN, BODY_TOP), (MARGIN + half_w + Inches(0.2), BODY_TOP),
              (MARGIN, BODY_TOP + Inches(1.55)), (MARGIN + half_w + Inches(0.2), BODY_TOP + Inches(1.55))]
 for (title, body), (x, y) in zip(limits, positions):
@@ -663,9 +663,13 @@ concl = [
 y = BODY_TOP
 for title, body in concl:
     add_card(s, MARGIN, y, CONTENT_W, Inches(1.35), title=title, body=body, body_size=13)
-    y += Inches(1.5)
+    y += Inches(1.45)
 
-add_textbox(s, MARGIN, y + Inches(0.1), CONTENT_W, Inches(0.35),
+add_textbox(s, MARGIN, y + Inches(0.05), CONTENT_W, Inches(0.3),
+            [[("데이터 — 전세보증대위변제현황_깡통라벨.xlsx          코드 — 전세사기예측_AUC 비교.ipynb"
+               "          대시보드 — 전세사기예측_대시보드 추가.ipynb",
+               dict(size=10.5, color=INK_FAINT, font=FONT_MONO))]])
+add_textbox(s, MARGIN, y + Inches(0.35), CONTENT_W, Inches(0.35),
             [[("전세탐정 팀 — 박지민 · 박소연 · 송예원 · 이다영          감사합니다",
                dict(size=12, color=INK_FAINT, font=FONT_MONO))]])
 
