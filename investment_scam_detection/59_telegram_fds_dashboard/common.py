@@ -20,6 +20,10 @@ DATA_DIR = BASE_DIR / "data"
 RAW_CSV = DATA_DIR / "raw_data.csv"
 CLEAN_PARQUET = DATA_DIR / "clean.parquet"
 SCORED_PARQUET = DATA_DIR / "scored.parquet"
+# 사건별 일별 시세·코스닥지수·관련 뉴스·관련 공시 원문 목록 — dashboard_.html(최종 산출물)에
+# 내장돼 있던 실데이터를 그대로 꺼내온 것(사건상세 CSV에는 요약 열만 있고 원본 시계열/기사
+# 목록은 없음). "🔎 사건 상세" 탭에서만 사용 — 목록 화면(02/03 결과)에는 영향 없음.
+EVENT_DETAIL_JSON = DATA_DIR / "event_market_news_disclosures.json"
 
 # ---------------------------------------------------------------------------
 # 분석 대상 · 배치 기준 정보 (PRD 9번 Scope / 노트북 0단계와 동일)

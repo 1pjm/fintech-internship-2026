@@ -9,6 +9,7 @@
 """
 
 import importlib
+import json
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,6 +35,12 @@ C.set_korean_font()
 @st.cache_data
 def load_clean(path):
     return pd.read_parquet(path)
+
+
+@st.cache_data
+def load_event_detail(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
 
 
 if not C.CLEAN_PARQUET.exists():
@@ -144,7 +151,132 @@ else:
 # ---------------------------------------------------------------------------
 # 탭
 # ---------------------------------------------------------------------------
-tab_list, tab_chart, tab_data = st.tabs(["📋 경보 (익명)", "📊 그래프", "🗂 데이터"])
+tab_detail, tab_list, tab_chart, tab_data = st.tabs(
+    ["🔎 사건 상세", "📋 경보 (익명)", "📊 그래프", "🗂 데이터"]
+)
+
+# ---- 🔎 사건 상세 -------------------------------------------------------
+with tab_detail:
+    st.caption(
+        "목록은 사건 ID만 표시합니다(PRD 익명화 원칙). 사건을 하나 선택하면 오른쪽에 "
+        "실제 조사에 필요한 종목명·시세·뉴스·공시가 함께 열립니다 — 목록을 훑을 때는 "
+        "종목명이 판단을 앞서가지 않도록 가리고, 상세 검수 단계에서만 신원을 드러내는 설계입니다."
+    )
+
+    status_counts = view["pattern_status"].value_counts()
+    status_options = ["전체"] + C.ALL_GRADES
+    status_labels = {"전체": f"전체 ({len(view)})"}
+    status_labels.update({s: f"{s} ({int(status_counts.get(s, 0))})" for s in C.ALL_GRADES})
+    picked_status = st.pills(
+        "상태 필터", status_options, default="전체",
+        format_func=lambda s: status_labels[s], key="detail_status_filter",
+    )
+    detail_pool = view if picked_status == "전체" else view[view["pattern_status"] == picked_status]
+
+    col_list, col_detail = st.columns([3, 2])
+
+    with col_list:
+        detail_view = detail_pool.copy()
+        detail_view["사건ID"] = detail_view["event_id"].map(C.short_event_id)
+        detail_view["등급"] = detail_view["pattern_status"].astype(str)
+        picked = st.dataframe(
+            detail_view[["사건ID", "event_anchor_at", "mention_session", "등급",
+                         "event_max_volume_ratio", "post_relative_return_pct"]],
+            hide_index=True, width="stretch", height=460,
+            column_config={
+                "사건ID": st.column_config.TextColumn("사건 ID"),
+                "event_anchor_at": st.column_config.DatetimeColumn("언급 시각", format="YYYY-MM-DD HH:mm"),
+                "mention_session": st.column_config.TextColumn("세션"),
+                "등급": st.column_config.TextColumn("등급"),
+                "event_max_volume_ratio": st.column_config.NumberColumn("거래량 배율", format="%.1f×"),
+                "post_relative_return_pct": st.column_config.NumberColumn("사후 상대수익률(%)", format="%.1f"),
+            },
+            on_select="rerun", selection_mode="single-row", key="detail_table",
+        )
+        st.caption(f"{len(detail_view)}건 표시 — 행을 클릭하면 오른쪽에 상세가 열립니다.")
+
+    selected_rows = picked["selection"]["rows"] if picked else []
+    if selected_rows:
+        sel = detail_view.iloc[selected_rows[0]]
+    elif len(detail_view):
+        sel = detail_view.iloc[0]
+    else:
+        sel = None
+
+    with col_detail:
+        if sel is None:
+            st.info("선택한 상태에 해당하는 사건이 없습니다.")
+        elif not C.EVENT_DETAIL_JSON.exists():
+            st.warning("사건 상세(시세·뉴스·공시) 데이터 파일이 없습니다: event_market_news_disclosures.json")
+        else:
+            event_id = sel["event_id"]
+            grade_color = C.GRADE_COLORS.get(sel["등급"], C.MUTED)
+            st.markdown(f"#### {sel['stock_name']} · `{sel['ticker']}`")
+            cap = int(sel["market_cap_krw"]) if pd.notna(sel.get("market_cap_krw")) else None
+            st.caption(
+                f"사건ID {sel['사건ID']} · "
+                + (f"시가총액 {cap / 1e8:,.1f}억 원 (기준일 {C.BATCH_REFERENCE_DATE}) · " if cap else "")
+                + f"{sel['mention_session']} 언급 · {sel['등급']}"
+            )
+
+            detail_data = load_event_detail(C.EVENT_DETAIL_JSON)
+            series = detail_data["marketByEvent"].get(event_id)
+            if series:
+                s_df = pd.DataFrame(series)
+                s_df["d"] = pd.to_datetime(s_df["d"])
+                base_date = pd.to_datetime(sel.get("market_event_date"))
+                base_row = s_df[s_df["d"] <= base_date].tail(1) if pd.notna(base_date) else s_df.tail(1)
+                if base_row.empty:
+                    base_row = s_df.head(1)
+                base_c = float(base_row["c"].iloc[0])
+                base_ix = float(base_row["ix"].iloc[0])
+                base_date = base_row["d"].iloc[0]
+
+                fig, (ax1, ax2) = plt.subplots(
+                    2, 1, figsize=(6, 3.6), sharex=True,
+                    gridspec_kw={"height_ratios": [2, 1]},
+                )
+                ax1.plot(s_df["d"], s_df["c"] / base_c * 100, color=C.BLUE, label="종목 가격(지수화)")
+                ax1.plot(s_df["d"], s_df["ix"] / base_ix * 100, color=C.ORANGE, label="코스닥지수(지수화)")
+                ax1.axvline(base_date, color=C.RED, linestyle="--", linewidth=1, label="반응 기준일")
+                ax1.legend(fontsize=7, loc="upper left")
+                C.style_axis(ax1, f"{base_date:%Y-%m-%d} = 100 기준")
+
+                vol_colors = [C.RED if d == base_date else C.MUTED for d in s_df["d"]]
+                ax2.bar(s_df["d"], s_df["v"], color=vol_colors, width=1.0)
+                C.style_axis(ax2, None, "거래량")
+                fig.autofmt_xdate(rotation=45)
+                st.pyplot(fig)
+                plt.close(fig)
+            else:
+                st.info("이 사건은 시장 시계열 데이터가 없습니다(사건 구간 거래량 없음 등).")
+
+            st.markdown("**판정 근거**")
+            badges = [b for b in str(sel.get("reason_badges", "")).split("; ") if b]
+            chip_html = "".join(
+                f'<span style="display:inline-block;background:{grade_color}22;color:{grade_color};'
+                f'border:1px solid {grade_color}55;border-radius:12px;padding:2px 10px;'
+                f'margin:2px 4px 2px 0;font-size:0.82rem;">{b}</span>'
+                for b in badges
+            )
+            st.markdown(chip_html or "표시할 근거가 없습니다.", unsafe_allow_html=True)
+
+            st.divider()
+            disc = detail_data["discByEvent"].get(event_id, [])
+            st.markdown(f"**관련 공시 (OPEN DART)** · {len(disc)}건")
+            if disc:
+                for item in disc[:5]:
+                    st.markdown(f"- [{item['r']}]({item['u']}) — {item['d']}")
+            else:
+                st.caption("관찰 기간 내 확인된 공시가 없습니다.")
+
+            news = detail_data["newsByEvent"].get(event_id, [])
+            st.markdown(f"**관련 뉴스** · {len(news)}건")
+            if news:
+                for item in news[:5]:
+                    st.markdown(f"- [{item['t']}]({item['u']}) — {item['d']} · {item['p']}")
+            else:
+                st.caption("사건 전후로 확인된 뉴스가 없습니다.")
 
 # ---- 📋 경보 -----------------------------------------------------------
 with tab_list:
