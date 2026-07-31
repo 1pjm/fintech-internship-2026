@@ -1,3 +1,5 @@
 __pycache__/
 data/clean.parquet
 data/scored.parquet
+.streamlit
+.venv
