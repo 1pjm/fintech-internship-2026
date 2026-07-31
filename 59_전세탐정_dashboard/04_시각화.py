@@ -27,13 +27,16 @@ if not C.SCORED_PARQUET.exists():
     st.stop()
 
 data = load_scored(C.SCORED_PARQUET)
-data["기간라벨"] = data["보증완료연도"].astype(str) + "-" + data["보증완료월"].astype(str).str.zfill(2)
+data["기간라벨"] = data["보증완료연도"].astype(
+    str) + "-" + data["보증완료월"].astype(str).str.zfill(2)
 
 with st.sidebar:
     st.header("등급 컷오프")
     st.caption("여기서 바꾼 값은 **화면에서만** 다시 등급을 매긴다 (모델 재추론 없음).")
-    caution_cutoff = st.slider("주의 컷오프(점)", 10.0, 60.0, C.DEFAULT_CAUTION_CUTOFF, 1.0)
-    danger_cutoff = st.slider("위험 컷오프(점)", 60.0, 99.0, C.DEFAULT_DANGER_CUTOFF, 1.0)
+    caution_cutoff = st.slider(
+        "주의 컷오프(점)", 10.0, 60.0, C.DEFAULT_CAUTION_CUTOFF, 1.0)
+    danger_cutoff = st.slider("위험 컷오프(점)", 60.0, 99.0,
+                              C.DEFAULT_DANGER_CUTOFF, 1.0)
 
     st.header("체크리스트 기준")
     kkang_th = st.slider("깡통지수 과다 기준", 0.3, 1.5, 0.8, 0.05)
@@ -76,8 +79,10 @@ st.caption(f"{start_label} ~ {end_label} · {len(pick_sido)}개 시도 · {len(p
            f"{len(view):,}건 · 03단계 결과(LightGBM 예측 확률)를 읽어 표시")
 
 kpi = st.columns(5)
-kpi[0].metric("점검한 계약수", f"{stats['점검한 계약수']:,}", f"판단보류 {stats['판단보류']}", delta_color="off")
-kpi[1].metric("위험 등급", f"{stats['위험 발생']}건", f"{stats['발생 비율(%)']}%", delta_color="off")
+kpi[0].metric("점검한 계약수", f"{stats['점검한 계약수']:,}",
+              f"판단보류 {stats['판단보류']}", delta_color="off")
+kpi[1].metric("위험 등급", f"{stats['위험 발생']}건",
+              f"{stats['발생 비율(%)']}%", delta_color="off")
 kpi[2].metric("주의 등급", f"{stats['주의 발생']}건")
 kpi[3].metric("평균 위험도점수", f"{stats['평균 위험도점수']}점")
 kpi[4].metric("실제 대위변제 비율", f"{stats['실제 대위변제 비율(%)']}%")
@@ -144,7 +149,8 @@ with tab_list:
         for name, (col, weight, guide) in C.RULES.items():
             hit = int(checks[name].sum())
             if hit:
-                st.markdown(f"- **{name}** ({hit}건, SHAP 기여 {weight:.0%}) — {guide}")
+                st.markdown(
+                    f"- **{name}** ({hit}건, SHAP 기여 {weight:.0%}) — {guide}")
 
 with tab_chart:
     left, right = st.columns([3, 2])
@@ -158,7 +164,7 @@ with tab_chart:
         avg_rate = rate.mean()
         fig, ax = plt.subplots(figsize=(8, 3.2))
         bars = ax.barh(rate.index, rate.values,
-                        color=[C.RED if v >= avg_rate else C.MUTED for v in rate.values])
+                       color=[C.RED if v >= avg_rate else C.MUTED for v in rate.values])
         ax.bar_label(bars, fmt="%.1f%%", padding=3)
         top_region = rate.idxmax() if not rate.empty else "-"
         C.style_axis(ax, f"{top_region} 지역이 위험 등급 비율이 가장 높다", "비율(%)")
@@ -166,20 +172,27 @@ with tab_chart:
         plt.close(fig)
 
     with right:
-        grades = view["등급"].value_counts().reindex(C.ALL_GRADES).fillna(0).astype(int)
+        grades = view["등급"].value_counts().reindex(
+            C.ALL_GRADES).fillna(0).astype(int)
         fig, ax = plt.subplots(figsize=(5.5, 3.2))
-        bars = ax.bar(grades.index, grades.values, color=[C.GRADE_COLORS[g] for g in grades.index])
+        bars = ax.bar(grades.index, grades.values, color=[
+                      C.GRADE_COLORS[g] for g in grades.index])
         ax.bar_label(bars, fmt="%d", padding=3)
-        C.style_axis(ax, f"전체 {len(view):,}건 중 위험 {int(grades['위험']):,}건", "건수")
+        C.style_axis(
+            ax, f"전체 {len(view):,}건 중 위험 {int(grades['위험']):,}건", "건수")
         ax.set_yscale("symlog")
+        ax.set_ylim(top=grades.values.max() * 3)
         st.pyplot(fig)
         plt.close(fig)
 
     monthly = view.groupby("기간라벨")["위험도점수"].mean().sort_index()
     fig, ax = plt.subplots(figsize=(11, 3.2))
-    ax.plot(monthly.index, monthly.values, marker="o", markersize=4, color=C.BLUE, label="평균 위험도점수")
-    ax.axhline(danger_cutoff, color=C.RED, linestyle="--", label=f"위험 기준 {danger_cutoff:.0f}점")
-    ax.axhline(caution_cutoff, color=C.ORANGE, linestyle="--", label=f"주의 기준 {caution_cutoff:.0f}점")
+    ax.plot(monthly.index, monthly.values, marker="o",
+            markersize=4, color=C.BLUE, label="평균 위험도점수")
+    ax.axhline(danger_cutoff, color=C.RED, linestyle="--",
+               label=f"위험 기준 {danger_cutoff:.0f}점")
+    ax.axhline(caution_cutoff, color=C.ORANGE, linestyle="--",
+               label=f"주의 기준 {caution_cutoff:.0f}점")
     over = monthly[monthly >= danger_cutoff]
     over_desc = ", ".join(over.index) if not over.empty else "없음"
     C.style_axis(ax, f"평균 위험도점수가 위험 기준을 넘은 달: {over_desc}", "위험도점수")
@@ -193,7 +206,8 @@ with tab_chart:
 with tab_data:
     st.markdown("**열 목록과 자료형**")
     st.dataframe(
-        pd.DataFrame({"열": data.columns, "자료형": data.dtypes.astype(str).values}),
+        pd.DataFrame(
+            {"열": data.columns, "자료형": data.dtypes.astype(str).values}),
         hide_index=True, width="stretch", height=280,
     )
 
